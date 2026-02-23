@@ -1,0 +1,99 @@
+{
+  "generated_at": "2026-01-13T12:08:59.951343+00:00",
+  "total_sources": 8,
+  "status_counts": {
+    "pendente": 3,
+    "restrito": 2,
+    "aprovado": 3
+  },
+  "entries": [
+    {
+      "id": "DS-001",
+      "fonte": "GitHub repos publicos",
+      "link_local": "(pesquisar)",
+      "tipo": "real",
+      "formato": "PNG/SVG",
+      "licenca": "por repo (MIT/Apache/CC)",
+      "classes_cobertas": "variado",
+      "qualidade": "media",
+      "status": "pendente"
+    },
+    {
+      "id": "DS-002",
+      "fonte": "AWS Architecture Center",
+      "link_local": "https://aws.amazon.com/architecture/",
+      "tipo": "real",
+      "formato": "PNG/PDF",
+      "licenca": "restrito (Site Terms)",
+      "classes_cobertas": "cloud",
+      "qualidade": "alta",
+      "status": "restrito"
+    },
+    {
+      "id": "DS-003",
+      "fonte": "Azure Architecture Center",
+      "link_local": "https://learn.microsoft.com/azure/architecture/",
+      "tipo": "real",
+      "formato": "PNG/PDF",
+      "licenca": "restrito (Terms of Use)",
+      "classes_cobertas": "cloud",
+      "qualidade": "alta",
+      "status": "restrito"
+    },
+    {
+      "id": "DS-004",
+      "fonte": "Google Cloud Architecture",
+      "link_local": "https://cloud.google.com/architecture",
+      "tipo": "real",
+      "formato": "PNG/PDF",
+      "licenca": "nao confirmado",
+      "classes_cobertas": "cloud",
+      "qualidade": "alta",
+      "status": "pendente"
+    },
+    {
+      "id": "DS-005",
+      "fonte": "diagrams (mingrammer)",
+      "link_local": "https://github.com/mingrammer/diagrams",
+      "tipo": "sintetico",
+      "formato": "PNG",
+      "licenca": "MIT (repo) + verificar icones",
+      "classes_cobertas": "base",
+      "qualidade": "media",
+      "status": "aprovado"
+    },
+    {
+      "id": "DS-006",
+      "fonte": "drawio-diagrams (jgraph)",
+      "link_local": "https://github.com/jgraph/drawio-diagrams",
+      "tipo": "real",
+      "formato": "SVG/PNG",
+      "licenca": "Apache-2.0",
+      "classes_cobertas": "variado",
+      "qualidade": "alta",
+      "status": "aprovado"
+    },
+    {
+      "id": "DS-007",
+      "fonte": "C4-PlantUML",
+      "link_local": "https://github.com/plantuml-stdlib/C4-PlantUML",
+      "tipo": "sintetico",
+      "formato": "PNG/SVG",
+      "licenca": "MIT",
+      "classes_cobertas": "base",
+      "qualidade": "alta",
+      "status": "aprovado"
+    },
+    {
+      "id": "DS-008",
+      "fonte": "drawio-threatmodeling",
+      "link_local": "https://github.com/michenriksen/drawio-threatmodeling",
+      "tipo": "real",
+      "formato": "(nao confirmado)",
+      "licenca": "licenca nao encontrada",
+      "classes_cobertas": "threat modeling",
+      "qualidade": "media",
+      "status": "pendente"
+    }
+  ]
+}

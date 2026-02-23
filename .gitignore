@@ -8,7 +8,8 @@ backend/uploads/
 backend/.env
 .env
 mobile/.expo/
-mobile/
 Thumbs.db
 .DS_Store
 .vscode/
+dataset_augmented/
+data/raw/images/
