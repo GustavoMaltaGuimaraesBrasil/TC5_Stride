@@ -9,27 +9,53 @@ interface Props {
 
 export default function ThreatCard({ threat }: Props) {
   const borderColor = severityColor(threat.severity);
+  const severityLabel: Record<string, string> = {
+    critical: 'CRITICO',
+    high: 'ALTO',
+    medium: 'MEDIO',
+    low: 'BAIXO',
+  };
+  const strideLabel: Record<string, string> = {
+    Spoofing: 'Falsificacao de Identidade',
+    Tampering: 'Violacao de Integridade',
+    Repudiation: 'Repudio',
+    'Information Disclosure': 'Divulgacao de Informacao',
+    'Denial of Service': 'Negacao de Servico',
+    'Elevation of Privilege': 'Elevacao de Privilegio',
+  };
 
   return (
     <View style={[styles.card, { borderLeftColor: borderColor }]}>
       <View style={styles.badges}>
         <View style={[styles.severityBadge, { backgroundColor: borderColor }]}>
-          <Text style={styles.badgeText}>{threat.severity.toUpperCase()}</Text>
+          <Text style={styles.badgeText}>{severityLabel[threat.severity] ?? threat.severity.toUpperCase()}</Text>
         </View>
         <View style={styles.strideBadge}>
-          <Text style={styles.strideText}>{threat.stride_category}</Text>
+          <Text style={styles.strideText}>{strideLabel[threat.stride_category] ?? threat.stride_category}</Text>
         </View>
       </View>
       <Text style={styles.target}>{threat.target_name}</Text>
       <Text style={styles.description}>{threat.description}</Text>
       <Text style={styles.mitigation}>
-        <Text style={styles.bold}>Mitigation: </Text>
+        <Text style={styles.bold}>Mitigacao: </Text>
         {threat.mitigation}
       </Text>
       {threat.affected_flows.length > 0 && (
         <Text style={styles.flows}>
-          <Text style={styles.bold}>Flows: </Text>
+          <Text style={styles.bold}>Fluxos: </Text>
           {threat.affected_flows.join(', ')}
+        </Text>
+      )}
+      {threat.evidence.length > 0 && (
+        <Text style={styles.flows}>
+          <Text style={styles.bold}>Evidencias: </Text>
+          {threat.evidence.join(' | ')}
+        </Text>
+      )}
+      {threat.reference_ids.length > 0 && (
+        <Text style={styles.flows}>
+          <Text style={styles.bold}>Referencias: </Text>
+          {threat.reference_ids.join(', ')}
         </Text>
       )}
     </View>

@@ -1,4 +1,4 @@
-"""Analysis endpoints — upload image, run pipeline, retrieve results."""
+﻿"""Analysis endpoints - upload image, run pipeline, retrieve results."""
 
 import logging
 import shutil
@@ -24,7 +24,7 @@ from app.services import vision, stride, report
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
+ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
 
 
 @router.post("/analysis", response_model=AnalysisResponse, status_code=201)
@@ -33,25 +33,22 @@ async def create_analysis(
     session: AsyncSession = Depends(get_session),
 ):
     """Upload an architecture diagram and run the full STRIDE pipeline."""
-    # Validate file extension
     original_filename = file.filename or "upload"
     ext = Path(original_filename).suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             400,
             (
-                f"Unsupported file type: {ext}. "
-                "Use PNG, JPG, JPEG, GIF, or WEBP."
+                f"Tipo de arquivo nao suportado: {ext}. "
+                "Use PNG, JPG, JPEG, GIF, WEBP ou BMP."
             ),
         )
 
-    # Save uploaded file
     unique_name = f"{uuid.uuid4().hex}{ext}"
     upload_path = Path(settings.upload_dir) / unique_name
     with open(upload_path, "wb") as f:
         shutil.copyfileobj(file.file, f)
 
-    # Create DB record
     analysis_record = Analysis(
         image_filename=original_filename,
         image_path=str(upload_path),
@@ -62,18 +59,17 @@ async def create_analysis(
     await session.refresh(analysis_record)
 
     try:
-        # Stage 1: Vision — extract components, groups, flows
         logger.info("Stage 1: Extracting diagram (analysis_id=%d)", analysis_record.id)
         diagram = await vision.extract_diagram(str(upload_path))
 
         analysis_record.diagram_json = diagram.model_dump()
 
-        # Stage 2: STRIDE — threat analysis
         logger.info("Stage 2: STRIDE analysis (analysis_id=%d)", analysis_record.id)
         stride_report = await stride.analyze_stride(diagram)
 
         analysis_record.stride_json = stride_report.model_dump()
         analysis_record.status = "done"
+        analysis_record.error_message = None
         analysis_record.completed_at = datetime.now(timezone.utc)
 
         await session.commit()
@@ -85,6 +81,7 @@ async def create_analysis(
             status=analysis_record.status,
             diagram=diagram,
             stride=stride_report,
+            error_message=analysis_record.error_message,
             created_at=analysis_record.created_at,
             completed_at=analysis_record.completed_at,
         )
@@ -92,30 +89,30 @@ async def create_analysis(
     except Exception:
         logger.exception("Pipeline failed for analysis_id=%d", analysis_record.id)
         analysis_record.status = "error"
-        analysis_record.error_message = "Pipeline execution failed. Check server logs for details."
+        analysis_record.error_message = "Falha na execucao do pipeline. Consulte os logs do servidor."
         await session.commit()
-        raise HTTPException(500, "Analysis pipeline failed. Check backend logs for details.")
+        raise HTTPException(500, "Falha no pipeline de analise. Consulte os logs do backend.")
 
 
 @router.get("/analysis", response_model=list[AnalysisListItem])
 async def list_analyses(session: AsyncSession = Depends(get_session)):
     """List all past analyses (most recent first)."""
-    result = await session.execute(
-        select(Analysis).order_by(Analysis.created_at.desc())
-    )
+    result = await session.execute(select(Analysis).order_by(Analysis.created_at.desc()))
     rows = result.scalars().all()
     items = []
     for row in rows:
         threat_count = 0
         if row.stride_json and "threats" in row.stride_json:
             threat_count = len(row.stride_json["threats"])
-        items.append(AnalysisListItem(
-            id=row.id,
-            image_filename=row.image_filename,
-            status=row.status,
-            threat_count=threat_count,
-            created_at=row.created_at,
-        ))
+        items.append(
+            AnalysisListItem(
+                id=row.id,
+                image_filename=row.image_filename,
+                status=row.status,
+                threat_count=threat_count,
+                created_at=row.created_at,
+            )
+        )
     return items
 
 
@@ -125,7 +122,7 @@ async def get_analysis(analysis_id: int, session: AsyncSession = Depends(get_ses
     result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
     row = result.scalar_one_or_none()
     if not row:
-        raise HTTPException(404, "Analysis not found")
+        raise HTTPException(404, "Analise nao encontrada")
 
     diagram = DiagramAnalysis.model_validate(row.diagram_json) if row.diagram_json else None
     stride_data = STRIDEReport.model_validate(row.stride_json) if row.stride_json else None
@@ -148,14 +145,19 @@ async def download_pdf(analysis_id: int, session: AsyncSession = Depends(get_ses
     result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
     row = result.scalar_one_or_none()
     if not row:
-        raise HTTPException(404, "Analysis not found")
+        raise HTTPException(404, "Analise nao encontrada")
     if row.status != "done":
-        raise HTTPException(400, "Analysis is not complete yet")
+        raise HTTPException(400, "A analise ainda nao foi concluida")
 
     diagram = DiagramAnalysis.model_validate(row.diagram_json)
     stride_data = STRIDEReport.model_validate(row.stride_json)
 
-    pdf_bytes = report.generate_pdf(diagram, stride_data, row.image_filename)
+    pdf_bytes = report.generate_pdf(
+        diagram,
+        stride_data,
+        row.image_filename,
+        row.image_path,
+    )
 
     return Response(
         content=pdf_bytes,

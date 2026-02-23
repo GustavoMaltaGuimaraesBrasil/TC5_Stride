@@ -10,6 +10,7 @@ export interface AnalysisResponse {
 }
 
 export interface DiagramAnalysis {
+  context_summary: string;
   components: Component[];
   groups: Group[];
   flows: Flow[];
@@ -60,6 +61,8 @@ export interface Threat {
   severity: string;
   mitigation: string;
   affected_flows: string[];
+  evidence: string[];
+  reference_ids: string[];
 }
 
 export interface AnalysisListItem {

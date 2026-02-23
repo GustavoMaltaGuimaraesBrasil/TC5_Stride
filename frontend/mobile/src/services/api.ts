@@ -76,7 +76,7 @@ export async function uploadAndAnalyze(
   const normalizedMimeType = inferMimeType(filename, imageUri, mimeType);
   if (!SUPPORTED_MIME_TYPES.has(normalizedMimeType)) {
     throw new Error(
-      `Unsupported image format (${normalizedMimeType}). Use PNG, JPG, JPEG, GIF, or WEBP.`,
+      `Formato de imagem nao suportado (${normalizedMimeType}). Use PNG, JPG, JPEG, GIF ou WEBP.`,
     );
   }
   const normalizedFilename = ensureFilename(filename, normalizedMimeType);
@@ -95,7 +95,7 @@ export async function uploadAndAnalyze(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || 'Analysis failed');
+    throw new Error(err.detail || 'Falha na analise');
   }
 
   return res.json();
@@ -103,13 +103,13 @@ export async function uploadAndAnalyze(
 
 export async function getAnalysis(id: number): Promise<AnalysisResponse> {
   const res = await fetch(`${API_BASE}/analysis/${id}`);
-  if (!res.ok) throw new Error('Failed to fetch analysis');
+  if (!res.ok) throw new Error('Falha ao buscar analise');
   return res.json();
 }
 
 export async function listAnalyses(): Promise<AnalysisListItem[]> {
   const res = await fetch(`${API_BASE}/analysis`);
-  if (!res.ok) throw new Error('Failed to fetch analyses');
+  if (!res.ok) throw new Error('Falha ao buscar analises');
   return res.json();
 }
 

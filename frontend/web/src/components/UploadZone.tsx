@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from 'react'
+﻿import { useCallback, useState, useRef } from 'react'
 
 interface UploadZoneProps {
   onFileSelected: (file: File) => void;
@@ -37,13 +37,13 @@ export default function UploadZone({ onFileSelected, disabled }: UploadZoneProps
       onDrop={handleDrop}
       onClick={handleClick}
     >
-      <div className="icon">📐</div>
-      <h3>Upload Architecture Diagram</h3>
-      <p>Drag &amp; drop a PNG, JPG, or WEBP image — or click to browse</p>
+      <div className="icon">[DIAGRAMA]</div>
+      <h3>Enviar Diagrama de Arquitetura</h3>
+      <p>Arraste e solte uma imagem PNG, JPG ou WEBP, ou clique para selecionar</p>
       <input
         ref={inputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/gif"
+        accept="image/png,image/jpeg,image/webp,image/gif,image/bmp"
         style={{ display: 'none' }}
         onChange={handleChange}
       />

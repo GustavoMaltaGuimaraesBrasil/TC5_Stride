@@ -11,7 +11,7 @@ export default function LoadingScreen({ filename, stage }: Props) {
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color={colors.primary} />
-      <Text style={styles.title}>Analyzing...</Text>
+      <Text style={styles.title}>Analisando...</Text>
       <Text style={styles.filename}>{filename}</Text>
       {stage && <Text style={styles.stage}>{stage}</Text>}
     </View>

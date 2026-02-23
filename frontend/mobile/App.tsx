@@ -15,10 +15,12 @@ export default function App() {
   const [result, setResult] = useState<AnalysisResponse | null>(null);
   const [error, setError] = useState('');
   const [filename, setFilename] = useState('');
+  const [imageUri, setImageUri] = useState('');
 
   const handleImageSelected = async (uri: string, name: string, mimeType?: string) => {
     setState('loading');
     setFilename(name);
+    setImageUri(uri);
     setError('');
 
     try {
@@ -26,7 +28,7 @@ export default function App() {
       setResult(data);
       setState('done');
     } catch (err: any) {
-      setError(err.message || 'Unknown error');
+      setError(err.message || 'Erro desconhecido');
       setState('error');
     }
   };
@@ -36,6 +38,7 @@ export default function App() {
     setResult(null);
     setError('');
     setFilename('');
+    setImageUri('');
   };
 
   return (
@@ -57,23 +60,23 @@ export default function App() {
       {state === 'loading' && (
         <LoadingScreen
           filename={filename}
-          stage="Extracting components, groups and flows..."
+          stage="Extraindo componentes, grupos e fluxos..."
         />
       )}
 
       {state === 'error' && (
         <View style={styles.errorContainer}>
           <View style={styles.errorBox}>
-            <Text style={styles.errorText}>Error: {error}</Text>
+            <Text style={styles.errorText}>Erro: {error}</Text>
           </View>
           <TouchableOpacity style={styles.retryBtn} onPress={handleReset}>
-            <Text style={styles.retryBtnText}>Try Again</Text>
+            <Text style={styles.retryBtnText}>Tentar Novamente</Text>
           </TouchableOpacity>
         </View>
       )}
 
       {state === 'done' && result && (
-        <ResultsScreen result={result} onReset={handleReset} />
+        <ResultsScreen result={result} imageUri={imageUri} onReset={handleReset} />
       )}
     </SafeAreaView>
   );

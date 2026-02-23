@@ -10,6 +10,7 @@ Este documento define como trabalhar neste repositorio e quais documentos consul
 ## Escopo atual (fev/2026)
 - Nao ha pipeline de ML neste projeto.
 - O fluxo usa OpenAI GPT-4o para extracao visual e analise textual.
+- A camada STRIDE usa RAG local para justificar ameacas e mitigacoes com referencias.
 - O foco e execucao de produto (backend + web + mobile).
 
 ## Arquitetura resumida
@@ -25,7 +26,7 @@ Este documento define como trabalhar neste repositorio e quais documentos consul
 - Implementa e revisa API FastAPI, validacoes, erros, persistencia e seguranca.
 
 3. Especialista em LLM/IA Aplicada
-- Ajusta prompts, schemas JSON, qualidade de extracao e fallback deterministico.
+- Ajusta prompts, schemas JSON, qualidade de extracao e RAG da camada STRIDE.
 
 4. Engenheiro Frontend Full Stack
 - Garante integracao web/mobile com backend, UX de upload/resultado/erros e consistencia visual.
@@ -35,9 +36,15 @@ Este documento define como trabalhar neste repositorio e quais documentos consul
 
 ## Fluxo tecnico
 1. Upload de imagem no frontend.
-2. Backend chama Vision Service (GPT-4o) e extrai estrutura do diagrama.
-3. Backend chama STRIDE Service (GPT-4o + regras deterministicas).
+2. Backend chama Vision Service (GPT-4o) e extrai estrutura do diagrama + `context_summary`.
+3. Backend chama STRIDE Service (GPT-4o + RAG local + regras deterministicas).
 4. Resultado e salvo no SQLite e pode ser exportado em PDF.
+
+## Regra de apresentacao de resultado
+- Antes das listagens de ameacas, a UI deve mostrar:
+  1. imagem submetida,
+  2. contexto da infraestrutura (`context_summary`).
+- O mesmo contexto e a imagem devem aparecer no PDF.
 
 ## Protocolo obrigatorio antes de executar
 Antes de alterar qualquer arquivo, a LLM deve informar:

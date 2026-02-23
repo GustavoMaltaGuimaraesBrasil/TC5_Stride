@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Linking,
   SafeAreaView,
+  Image,
 } from 'react-native';
 import { colors } from '../theme/colors';
 import SummaryCards from '../components/SummaryCards';
@@ -16,18 +17,19 @@ import { getPdfUrl } from '../services/api';
 
 interface Props {
   result: AnalysisResponse;
+  imageUri?: string;
   onReset: () => void;
 }
 
-export default function ResultsScreen({ result, onReset }: Props) {
+export default function ResultsScreen({ result, imageUri, onReset }: Props) {
   const { diagram, stride } = result;
 
   if (!diagram || !stride) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>No results available.</Text>
+        <Text style={styles.errorText}>Nenhum resultado disponivel.</Text>
         <TouchableOpacity style={styles.primaryBtn} onPress={onReset}>
-          <Text style={styles.btnText}>Try Again</Text>
+          <Text style={styles.btnText}>Tentar Novamente</Text>
         </TouchableOpacity>
       </View>
     );
@@ -40,28 +42,37 @@ export default function ResultsScreen({ result, onReset }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        {/* Header */}
-        <Text style={styles.heading}>Analysis Results</Text>
+        <Text style={styles.heading}>Resultado da Analise</Text>
         <Text style={styles.filename}>{result.image_filename}</Text>
 
-        {/* Summary */}
         <SummaryCards summary={stride.summary} />
 
-        {/* Architecture info */}
+        {imageUri ? (
+          <>
+            <Text style={styles.sectionTitle}>Diagrama Enviado</Text>
+            <Image source={{ uri: imageUri }} style={styles.diagramImage} resizeMode="contain" />
+          </>
+        ) : null}
+
+        {diagram.context_summary ? (
+          <>
+            <Text style={styles.sectionTitle}>Contexto da Infraestrutura</Text>
+            <Text style={styles.recommendation}>{diagram.context_summary}</Text>
+          </>
+        ) : null}
+
         <Text style={styles.sectionTitle}>
-          Architecture: {diagram.components.length} components, {diagram.groups.length} groups, {diagram.flows.length} flows
+          Arquitetura: {diagram.components.length} componentes, {diagram.groups.length} grupos, {diagram.flows.length} fluxos
         </Text>
 
-        {/* Threats */}
-        <Text style={styles.sectionTitle}>Threats</Text>
+        <Text style={styles.sectionTitle}>Ameacas</Text>
         {stride.threats.map((threat) => (
           <ThreatCard key={threat.id} threat={threat} />
         ))}
 
-        {/* Recommendations */}
         {stride.recommendations.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Recommendations</Text>
+            <Text style={styles.sectionTitle}>Recomendacoes</Text>
             {stride.recommendations.map((rec, i) => (
               <Text key={i} style={styles.recommendation}>
                 {i + 1}. {rec}
@@ -70,13 +81,12 @@ export default function ResultsScreen({ result, onReset }: Props) {
           </>
         )}
 
-        {/* Actions */}
         <View style={styles.actions}>
           <TouchableOpacity style={styles.primaryBtn} onPress={handleDownloadPdf}>
-            <Text style={styles.btnText}>📄 Download PDF</Text>
+            <Text style={styles.btnText}>Baixar PDF</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondaryBtn} onPress={onReset}>
-            <Text style={styles.secondaryBtnText}>+ New Analysis</Text>
+            <Text style={styles.secondaryBtnText}>+ Nova Analise</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -128,6 +138,15 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     marginBottom: 6,
     paddingLeft: 4,
+  },
+  diagramImage: {
+    width: '100%',
+    height: 220,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    marginBottom: 10,
   },
   actions: {
     marginTop: 24,

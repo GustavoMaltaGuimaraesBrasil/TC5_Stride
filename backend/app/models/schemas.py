@@ -31,6 +31,7 @@ class Flow(BaseModel):
 
 class DiagramAnalysis(BaseModel):
     """Output of Stage 1 (Vision)."""
+    context_summary: str = ""
     components: list[Component] = []
     groups: list[Group] = []
     flows: list[Flow] = []
@@ -47,6 +48,8 @@ class Threat(BaseModel):
     severity: str = Field(..., description="critical, high, medium, low")
     mitigation: str
     affected_flows: list[str] = Field(default_factory=list, description="Flow descriptions, e.g. 'c1 -> c2'")
+    evidence: list[str] = Field(default_factory=list, description="Observed evidence from diagram/flow/boundary used to justify threat.")
+    reference_ids: list[str] = Field(default_factory=list, description="Knowledge references used in the mitigation rationale.")
 
 
 class ThreatSummary(BaseModel):

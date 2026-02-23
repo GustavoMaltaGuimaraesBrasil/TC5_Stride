@@ -4,10 +4,12 @@ import json
 import logging
 from pathlib import Path
 
+import httpx
 from openai import AsyncOpenAI
 
 from app.config import settings
-from app.models.schemas import DiagramAnalysis, STRIDEReport
+from app.models.schemas import DiagramAnalysis, STRIDEReport, Threat
+from app.services import rag
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +22,20 @@ async def analyze_stride(diagram: DiagramAnalysis) -> STRIDEReport:
     Receive the structured diagram JSON (Stage 1 output) and produce
     a STRIDE threat report using a second LLM call + deterministic rules.
     """
-    client = AsyncOpenAI(api_key=settings.openai_api_key)
+    client = AsyncOpenAI(
+        api_key=settings.openai_api_key,
+        http_client=httpx.AsyncClient(trust_env=False),
+    )
 
     diagram_json = diagram.model_dump_json(indent=2)
+    component_types = ", ".join(sorted({c.type for c in diagram.components})) or "unknown"
+    rag_query = (
+        f"components={len(diagram.components)} types={component_types} "
+        f"flows={len(diagram.flows)} groups={len(diagram.groups)} "
+        f"focus=stride threats mitigations trust boundary crossing"
+    )
+    rag_chunks = rag.retrieve_stride_context(rag_query, top_k=5)
+    rag_context = rag.format_context_for_prompt(rag_chunks)
 
     logger.info(
         "Sending diagram to STRIDE analysis (%d components, %d flows)",
@@ -42,6 +55,9 @@ async def analyze_stride(diagram: DiagramAnalysis) -> STRIDEReport:
                 "content": (
                     "Analyze the following software architecture for STRIDE threats. "
                     "Pay special attention to flows crossing trust boundaries.\n\n"
+                    "RAG CONTEXT (use these ids in reference_ids):\n"
+                    f"{rag_context}\n\n"
+                    "ARCHITECTURE JSON:\n"
                     f"```json\n{diagram_json}\n```"
                 ),
             },
@@ -56,6 +72,19 @@ async def analyze_stride(diagram: DiagramAnalysis) -> STRIDEReport:
 
     data = json.loads(raw)
     report = STRIDEReport.model_validate(data)
+
+    for t in report.threats:
+        if not t.reference_ids:
+            t.reference_ids = rag.default_reference_ids()
+        if not t.evidence:
+            ev: list[str] = []
+            if t.target_name:
+                ev.append(f"Target component: {t.target_name} ({t.target_id})")
+            if t.affected_flows:
+                ev.append(f"Affected flows: {', '.join(t.affected_flows)}")
+            if not ev:
+                ev.append("Derived from architecture component role and STRIDE category mapping.")
+            t.evidence = ev
 
     # Deterministic enrichment: ensure summary counts match actual threats
     report.summary.total_threats = len(report.threats)
@@ -126,7 +155,7 @@ def _ensure_baseline_coverage(diagram: DiagramAnalysis, report: STRIDEReport):
         for comp in diagram.components:
             if comp.type in rule["types"]:
                 report.threats.append(
-                    __import__("app.models.schemas", fromlist=["Threat"]).Threat(
+                    Threat(
                         id=f"t{next_id}",
                         stride_category=category,
                         target_id=comp.id,
@@ -135,6 +164,8 @@ def _ensure_baseline_coverage(diagram: DiagramAnalysis, report: STRIDEReport):
                         severity="medium",
                         mitigation=rule["mitigation"],
                         affected_flows=[],
+                        evidence=[f"Target component type: {comp.type}", "Baseline STRIDE category coverage rule applied."],
+                        reference_ids=rag.default_reference_ids(),
                     )
                 )
                 next_id += 1

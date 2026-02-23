@@ -3,9 +3,9 @@
 MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arquitetura.
 
 ## Visao geral
-- Entrada: imagem de diagrama (`PNG`, `JPG`, `JPEG`, `GIF`, `WEBP`).
-- Estagio 1 (Vision): GPT-4o extrai componentes, grupos e fluxos em JSON.
-- Estagio 2 (STRIDE): GPT-4o + regras deterministicas gera ameacas e mitigacoes.
+- Entrada: imagem de diagrama (`PNG`, `JPG`, `JPEG`, `GIF`, `WEBP`, `BMP`).
+- Estagio 1 (Vision): GPT-4o extrai `context_summary`, componentes, grupos e fluxos em JSON.
+- Estagio 2 (STRIDE): GPT-4o + RAG local + regras deterministicas gera ameacas e mitigacoes.
 - Saida: resposta JSON, persistencia em SQLite e relatorio PDF.
 
 ## Stack
@@ -26,8 +26,7 @@ MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arqui
 ### 1) Backend
 ```bash
 cd backend
-copy .env.example .env
-# preencher OPENAI_API_KEY no .env
+# criar backend/.env e preencher OPENAI_API_KEY
 python -m uvicorn app.main:app --reload --port 8000
 ```
 
@@ -55,6 +54,22 @@ npx expo start
 - `GET /api/analysis/{id}`: detalhes
 - `GET /api/analysis/{id}/pdf`: download do relatorio
 - `GET /api/health`: health check
+
+## Rastreabilidade STRIDE (RAG)
+- Cada ameaca retornada inclui:
+  - `evidence`: evidencias observadas no diagrama/fluxos/boundaries.
+  - `reference_ids`: ids de referencias de seguranca usadas na decisao (ex.: `STRIDE-001`).
+- Base local de conhecimento: `backend/app/knowledge/stride_rag.md`.
+
+## Exibicao de resultado
+- Web e mobile exibem:
+  - a imagem submetida,
+  - o `context_summary` da etapa Vision,
+  - e depois as listagens de ameacas/recomendacoes.
+- O PDF tambem inclui:
+  - imagem submetida,
+  - contexto da infraestrutura,
+  - e listagens STRIDE.
 
 ## Status
 - Pipeline LLM ponta a ponta implementado.

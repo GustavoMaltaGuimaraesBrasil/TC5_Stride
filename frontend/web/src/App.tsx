@@ -11,11 +11,17 @@ export default function App() {
   const [result, setResult] = useState<AnalysisResponse | null>(null);
   const [error, setError] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<string>('');
+  const [previewUrl, setPreviewUrl] = useState<string>('');
 
   const handleFileSelected = async (file: File) => {
     setState('uploading');
     setError('');
     setSelectedFile(file.name);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    const nextPreview = URL.createObjectURL(file);
+    setPreviewUrl(nextPreview);
 
     try {
       const data = await uploadAndAnalyze(file);
@@ -32,6 +38,10 @@ export default function App() {
     setResult(null);
     setError('');
     setSelectedFile('');
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl('');
   };
 
   const handleDownloadPdf = () => {
@@ -43,10 +53,10 @@ export default function App() {
   return (
     <>
       <header>
-        <h1><span>STRIDE</span> Threat Modeler</h1>
+        <h1><span>STRIDE</span> Modelador de Ameacas</h1>
         {state === 'done' && (
           <button className="btn-secondary" onClick={handleReset}>
-            + New Analysis
+            + Nova Analise
           </button>
         )}
       </header>
@@ -58,9 +68,9 @@ export default function App() {
         {state === 'uploading' && (
           <div className="loading">
             <div className="spinner" />
-            <p>Analyzing <strong>{selectedFile}</strong>...</p>
+            <p>Analisando <strong>{selectedFile}</strong>...</p>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-              Stage 1: Extracting components, groups and flows...
+              Etapa 1: Extraindo componentes, grupos e fluxos...
             </p>
           </div>
         )}
@@ -68,10 +78,10 @@ export default function App() {
         {state === 'error' && (
           <div>
             <div className="error-box">
-              <strong>Error:</strong> {error}
+              <strong>Erro:</strong> {error}
             </div>
             <div className="actions">
-              <button className="btn-primary" onClick={handleReset}>Try Again</button>
+              <button className="btn-primary" onClick={handleReset}>Tentar Novamente</button>
             </div>
           </div>
         )}
@@ -81,6 +91,7 @@ export default function App() {
             diagram={result.diagram}
             stride={result.stride}
             analysisId={result.id}
+            imagePreviewUrl={previewUrl}
             onDownloadPdf={handleDownloadPdf}
             onReset={handleReset}
           />

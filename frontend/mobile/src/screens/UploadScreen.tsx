@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { colors } from '../theme/colors';
@@ -44,7 +44,7 @@ export default function UploadScreen({ onImageSelected, disabled }: Props) {
 
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
-      const { filename, mimeType } = buildUploadMeta(asset, 'diagram');
+      const { filename, mimeType } = buildUploadMeta(asset, 'diagrama');
       onImageSelected(asset.uri, filename, mimeType);
     }
   };
@@ -61,7 +61,7 @@ export default function UploadScreen({ onImageSelected, disabled }: Props) {
 
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
-      const { filename, mimeType } = buildUploadMeta(asset, 'photo');
+      const { filename, mimeType } = buildUploadMeta(asset, 'foto');
       onImageSelected(asset.uri, filename, mimeType);
     }
   };
@@ -69,19 +69,19 @@ export default function UploadScreen({ onImageSelected, disabled }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.hero}>
-        <Text style={styles.icon}>🛡️</Text>
-        <Text style={styles.title}>STRIDE Threat Modeler</Text>
+        <Text style={styles.icon}>[STRIDE]</Text>
+        <Text style={styles.title}>Modelador de Ameacas STRIDE</Text>
         <Text style={styles.subtitle}>
-          Upload or photograph an architecture diagram to get an automated STRIDE threat analysis
+          Envie ou fotografe um diagrama de arquitetura para receber uma analise STRIDE automatizada
         </Text>
       </View>
 
       <TouchableOpacity style={styles.primaryBtn} onPress={pickImage} disabled={disabled}>
-        <Text style={styles.primaryBtnText}>📁  Choose from Gallery</Text>
+        <Text style={styles.primaryBtnText}>Selecionar da Galeria</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.secondaryBtn} onPress={takePhoto} disabled={disabled}>
-        <Text style={styles.secondaryBtnText}>📷  Take a Photo</Text>
+        <Text style={styles.secondaryBtnText}>Tirar Foto</Text>
       </TouchableOpacity>
     </View>
   );
@@ -98,8 +98,10 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   icon: {
-    fontSize: 48,
+    fontSize: 20,
     marginBottom: 12,
+    color: colors.primary,
+    fontWeight: '700',
   },
   title: {
     fontSize: 24,

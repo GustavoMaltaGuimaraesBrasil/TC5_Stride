@@ -10,10 +10,10 @@ interface Props {
 export default function SummaryCards({ summary }: Props) {
   const cards = [
     { label: 'Total', value: summary.total_threats, color: colors.text },
-    { label: 'Critical', value: summary.critical, color: severityColor('critical') },
-    { label: 'High', value: summary.high, color: severityColor('high') },
-    { label: 'Medium', value: summary.medium, color: severityColor('medium') },
-    { label: 'Low', value: summary.low, color: severityColor('low') },
+    { label: 'Critico', value: summary.critical, color: severityColor('critical') },
+    { label: 'Alto', value: summary.high, color: severityColor('high') },
+    { label: 'Medio', value: summary.medium, color: severityColor('medium') },
+    { label: 'Baixo', value: summary.low, color: severityColor('low') },
   ];
 
   return (
