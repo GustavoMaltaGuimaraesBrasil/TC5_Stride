@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, Alert, Platform, StatusBar as RNStatusBar } from 'react-native';
 import UploadScreen from './src/screens/UploadScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
-import { uploadAndAnalyze, getAnalysis, getImageUrl, listAnalyses } from './src/services/api';
+import { uploadAndAnalyze, getAnalysis, getImageUrl, listAnalyses, deleteAnalysis } from './src/services/api';
 import type { AnalysisListItem, AnalysisResponse } from './src/services/api';
 import { colors } from './src/theme/colors';
 
@@ -89,6 +89,33 @@ export default function App() {
     void loadHistory();
   };
 
+  const handleDeleteAnalysis = (analysisId: number) => {
+    Alert.alert(
+      'Excluir analise',
+      `Deseja excluir a analise #${analysisId}?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAnalysis(analysisId);
+              if (result?.id === analysisId) {
+                handleReset();
+                return;
+              }
+              await loadHistory();
+            } catch (err: any) {
+              setError(err.message || 'Falha ao excluir analise');
+              setState('error');
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
@@ -105,6 +132,7 @@ export default function App() {
           analyses={history}
           historyLoading={historyLoading}
           onOpenAnalysis={handleOpenAnalysis}
+          onDeleteAnalysis={handleDeleteAnalysis}
           onRefreshHistory={loadHistory}
         />
       )}
@@ -128,7 +156,12 @@ export default function App() {
       )}
 
       {state === 'done' && result && (
-        <ResultsScreen result={result} imageUri={imageUri} onReset={handleReset} />
+        <ResultsScreen
+          result={result}
+          imageUri={imageUri}
+          onReset={handleReset}
+          onDelete={handleDeleteAnalysis}
+        />
       )}
     </SafeAreaView>
   );
@@ -140,7 +173,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   header: {
-    paddingVertical: 14,
+    paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight ?? 0) + 18 : 42,
+    paddingBottom: 18,
     paddingHorizontal: 16,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
@@ -150,6 +184,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 17,
     fontWeight: '600',
+    marginTop: 6,
   },
   headerAccent: {
     color: colors.primary,

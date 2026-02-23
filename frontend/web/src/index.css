@@ -107,6 +107,14 @@ button {
   color: var(--text);
   border: 1px solid var(--border);
 }
+.btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fecaca;
+  border: 1px solid var(--danger);
+}
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
 
 .loading {
   display: flex;
@@ -262,12 +270,15 @@ button {
   border-radius: 8px;
   padding: 12px 16px;
   margin-bottom: 8px;
-  cursor: pointer;
   transition: border-color 0.2s;
 }
 
 .history-item:hover {
   border-color: var(--primary);
+}
+.history-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .actions {

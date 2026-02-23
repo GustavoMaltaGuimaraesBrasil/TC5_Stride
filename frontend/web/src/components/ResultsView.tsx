@@ -7,9 +7,10 @@ interface ResultsViewProps {
   imagePreviewUrl?: string;
   onDownloadPdf: () => void;
   onReset: () => void;
+  onDelete: (analysisId: number) => void;
 }
 
-export default function ResultsView({ diagram, stride, analysisId: _analysisId, imagePreviewUrl, onDownloadPdf, onReset }: ResultsViewProps) {
+export default function ResultsView({ diagram, stride, analysisId, imagePreviewUrl, onDownloadPdf, onReset, onDelete }: ResultsViewProps) {
   const severityLabel: Record<string, string> = {
     critical: 'critico',
     high: 'alto',
@@ -127,6 +128,9 @@ export default function ResultsView({ diagram, stride, analysisId: _analysisId, 
         </button>
         <button className="btn-secondary" onClick={onReset}>
           Nova Analise
+        </button>
+        <button className="btn-danger" onClick={() => onDelete(analysisId)}>
+          Excluir Analise
         </button>
       </div>
     </div>

@@ -19,9 +19,10 @@ interface Props {
   result: AnalysisResponse;
   imageUri?: string;
   onReset: () => void;
+  onDelete: (analysisId: number) => void;
 }
 
-export default function ResultsScreen({ result, imageUri, onReset }: Props) {
+export default function ResultsScreen({ result, imageUri, onReset, onDelete }: Props) {
   const { diagram, stride } = result;
 
   if (!diagram || !stride) {
@@ -87,6 +88,9 @@ export default function ResultsScreen({ result, imageUri, onReset }: Props) {
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondaryBtn} onPress={onReset}>
             <Text style={styles.secondaryBtnText}>+ Nova Analise</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.dangerBtn} onPress={() => onDelete(result.id)}>
+            <Text style={styles.dangerBtnText}>Excluir Analise</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -175,6 +179,19 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 15,
     fontWeight: '500',
+  },
+  dangerBtn: {
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    borderWidth: 1,
+    borderColor: colors.danger,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  dangerBtnText: {
+    color: '#fecaca',
+    fontSize: 15,
+    fontWeight: '600',
   },
   errorText: {
     color: colors.danger,

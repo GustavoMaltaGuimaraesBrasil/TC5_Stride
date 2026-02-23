@@ -42,6 +42,11 @@ export async function listAnalyses(): Promise<AnalysisListItem[]> {
   return res.json();
 }
 
+export async function deleteAnalysis(id: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/analysis/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Falha ao excluir analise');
+}
+
 export function getPdfUrl(id: number): string {
   return `${API_BASE}/analysis/${id}/pdf`;
 }

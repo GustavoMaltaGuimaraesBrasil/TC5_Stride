@@ -9,16 +9,14 @@ echo   TC5_STRIDE - Inicializacao
 echo ==========================================
 echo.
 echo 1. Subir Web
-echo 2. Subir Mobile no simulador (Android)
-echo 3. Subir Mobile com QR Code (celular)
+echo 2. Subir Mobile com QR Code (rede local)
 echo 4. Executar Teste Automatico (pasta teste)
 echo 0. Sair
 echo.
 set /p opt=Escolha uma opcao: 
 
 if "%opt%"=="1" goto web
-if "%opt%"=="2" goto mobile_sim
-if "%opt%"=="3" goto mobile_qr
+if "%opt%"=="2" goto mobile_qr
 if "%opt%"=="4" goto run_test
 if "%opt%"=="0" goto end
 
@@ -38,23 +36,8 @@ if not exist "frontend\web\package.json" (
 echo.
 echo Iniciando Web...
 cd /d "%~dp0frontend\web"
-call npm install
+call npm install --include=dev --no-audit
 call npm run dev
-goto end
-
-:mobile_sim
-call :start_backend
-if not exist "frontend\mobile\package.json" (
-  echo.
-  echo Pasta frontend\mobile nao encontrada.
-  pause
-  goto menu
-)
-echo.
-echo Iniciando Mobile no simulador Android...
-cd /d "%~dp0frontend\mobile"
-call npm install
-call npx expo start --android
 goto end
 
 :mobile_qr
@@ -66,10 +49,13 @@ if not exist "frontend\mobile\package.json" (
   goto menu
 )
 echo.
-echo Iniciando Mobile com QR Code para celular...
+echo Iniciando Mobile com QR Code (rede local)...
+echo.
+echo Para Android: instalar e abrir Expo Go.
+echo Para iPhone: usar Camera para ler o QR (ou app Expo Go).
 cd /d "%~dp0frontend\mobile"
-call npm install
-call npx expo start --tunnel
+call npm install --include=dev --no-audit
+call npx expo start
 goto end
 
 :run_test

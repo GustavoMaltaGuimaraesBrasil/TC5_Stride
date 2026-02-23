@@ -9,6 +9,7 @@ interface Props {
   analyses: AnalysisListItem[];
   historyLoading?: boolean;
   onOpenAnalysis: (id: number) => void;
+  onDeleteAnalysis: (id: number) => void;
   onRefreshHistory: () => void;
   disabled?: boolean;
 }
@@ -43,6 +44,7 @@ export default function UploadScreen({
   analyses,
   historyLoading = false,
   onOpenAnalysis,
+  onDeleteAnalysis,
   onRefreshHistory,
   disabled,
 }: Props) {
@@ -107,17 +109,28 @@ export default function UploadScreen({
         <Text style={styles.emptyText}>Nenhum processamento salvo ainda.</Text>
       ) : (
         analyses.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={styles.historyItem}
-            onPress={() => onOpenAnalysis(item.id)}
-            disabled={disabled}
-          >
+          <View key={item.id} style={styles.historyItem}>
             <Text style={styles.historyItemTitle}>#{item.id} - {item.image_filename}</Text>
             <Text style={styles.historyItemMeta}>
               Status: {item.status} | Ameacas: {item.threat_count}
             </Text>
-          </TouchableOpacity>
+            <View style={styles.historyActions}>
+              <TouchableOpacity
+                style={styles.historyOpenBtn}
+                onPress={() => onOpenAnalysis(item.id)}
+                disabled={disabled}
+              >
+                <Text style={styles.historyOpenText}>Abrir</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.historyDeleteBtn}
+                onPress={() => onDeleteAnalysis(item.id)}
+                disabled={disabled}
+              >
+                <Text style={styles.historyDeleteText}>Excluir</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         ))
       )}
     </ScrollView>
@@ -219,5 +232,38 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 12,
     marginTop: 3,
+  },
+  historyActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+  historyOpenBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+    backgroundColor: colors.bg,
+  },
+  historyOpenText: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  historyDeleteBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: colors.danger,
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+  },
+  historyDeleteText: {
+    color: '#fecaca',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });

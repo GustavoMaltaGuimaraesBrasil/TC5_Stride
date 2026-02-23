@@ -32,6 +32,14 @@ def _image_url(analysis_id: int) -> str:
     return f"/api/analysis/{analysis_id}/image"
 
 
+def _delete_file_if_exists(path: Path):
+    try:
+        if path.exists():
+            path.unlink()
+    except Exception:
+        logger.warning("Falha ao remover arquivo %s", path, exc_info=True)
+
+
 @router.post("/analysis", response_model=AnalysisResponse, status_code=201)
 async def create_analysis(
     file: UploadFile = File(...),
@@ -192,3 +200,21 @@ async def get_analysis_image(analysis_id: int, session: AsyncSession = Depends(g
         media_type=media_type or "application/octet-stream",
         filename=row.image_filename,
     )
+
+
+@router.delete("/analysis/{analysis_id}", status_code=204)
+async def delete_analysis(analysis_id: int, session: AsyncSession = Depends(get_session)):
+    """Delete a saved analysis and its uploaded image."""
+    result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
+    row = result.scalar_one_or_none()
+    if not row:
+        raise HTTPException(404, "Analise nao encontrada")
+
+    original_path = Path(row.image_path)
+    normalized_path = original_path.with_suffix(".normalized.png")
+
+    await session.delete(row)
+    await session.commit()
+
+    _delete_file_if_exists(original_path)
+    _delete_file_if_exists(normalized_path)

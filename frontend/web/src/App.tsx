@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import UploadZone from './components/UploadZone'
 import ResultsView from './components/ResultsView'
-import { uploadAndAnalyze, getPdfUrl, getAnalysis, getImageUrl, listAnalyses } from './services/api'
+import { uploadAndAnalyze, getPdfUrl, getAnalysis, getImageUrl, listAnalyses, deleteAnalysis } from './services/api'
 import type { AnalysisListItem, AnalysisResponse } from './services/api'
 
 type AppState = 'idle' | 'uploading' | 'opening' | 'done' | 'error'
@@ -79,6 +79,23 @@ export default function App() {
     void loadHistory();
   };
 
+  const handleDeleteAnalysis = async (analysisId: number) => {
+    const confirmed = window.confirm(`Deseja excluir a analise #${analysisId}?`);
+    if (!confirmed) return;
+
+    try {
+      await deleteAnalysis(analysisId);
+      if (result?.id === analysisId) {
+        handleReset();
+        return;
+      }
+      void loadHistory();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Falha ao excluir analise');
+      setState('error');
+    }
+  };
+
   const handleDownloadPdf = () => {
     if (result) {
       window.open(getPdfUrl(result.id), '_blank');
@@ -109,20 +126,22 @@ export default function App() {
               )}
               {!historyLoading && history.length > 0 && (
                 history.map((item) => (
-                  <button
-                    key={item.id}
-                    className="history-item"
-                    onClick={() => handleOpenAnalysis(item.id)}
-                    type="button"
-                  >
+                  <div key={item.id} className="history-item">
                     <div style={{ textAlign: 'left' }}>
                       <strong>#{item.id} - {item.image_filename}</strong>
                       <p style={{ color: 'var(--text-muted)', marginTop: 4 }}>
                         Status: {item.status} | Ameacas: {item.threat_count}
                       </p>
                     </div>
-                    <span>Abrir</span>
-                  </button>
+                    <div className="history-actions">
+                      <button type="button" className="btn-secondary" onClick={() => handleOpenAnalysis(item.id)}>
+                        Abrir
+                      </button>
+                      <button type="button" className="btn-danger" onClick={() => handleDeleteAnalysis(item.id)}>
+                        Excluir
+                      </button>
+                    </div>
+                  </div>
                 ))
               )}
             </div>
@@ -160,6 +179,7 @@ export default function App() {
             imagePreviewUrl={imageUrl}
             onDownloadPdf={handleDownloadPdf}
             onReset={handleReset}
+            onDelete={handleDeleteAnalysis}
           />
         )}
       </div>
