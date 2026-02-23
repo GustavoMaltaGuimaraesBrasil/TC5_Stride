@@ -21,7 +21,7 @@ Este arquivo define o contexto e as regras de trabalho para todas as conversas s
 - Servicos: Vision Service (OpenAI), STRIDE Service (OpenAI + regras), Report Service (JSON/PDF).
 
 ## Principios tecnicos
-- LLM (GPT-4o Vision) faz a extracao de componentes da imagem (substitui YOLO).
+- LLM (GPT-4o Vision) faz a extracao de componentes da imagem.
 - Segundo estagio de LLM cruza dados estruturados com STRIDE e gera ameacas/mitigacoes.
 - Regras deterministicas complementam a LLM e garantem baseline.
 - Pipeline de dois estagios: Visao -> STRIDE (separacao limpa, testavel e auditavel).
