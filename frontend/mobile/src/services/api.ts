@@ -55,77 +55,18 @@ function ensureFilename(filename: string, mimeType: string): string {
   return `${cleanName || 'diagram'}${ext}`;
 }
 
-export interface Component {
-  id: string;
-  name: string;
-  type: string;
-  group: string | null;
-}
-
-export interface Group {
-  id: string;
-  name: string;
-  type: string;
-  component_ids: string[];
-}
-
-export interface Flow {
-  from_id: string;
-  to_id: string;
-  label: string | null;
-  protocol: string | null;
-  bidirectional: boolean;
-}
-
-export interface DiagramAnalysis {
-  components: Component[];
-  groups: Group[];
-  flows: Flow[];
-}
-
-export interface ThreatSummary {
-  total_threats: number;
-  critical: number;
-  high: number;
-  medium: number;
-  low: number;
-}
-
-export interface Threat {
-  id: string;
-  stride_category: string;
-  target_id: string;
-  target_name: string;
-  description: string;
-  severity: string;
-  mitigation: string;
-  affected_flows: string[];
-}
-
-export interface STRIDEReport {
-  summary: ThreatSummary;
-  threats: Threat[];
-  recommendations: string[];
-}
-
-export interface AnalysisResponse {
-  id: number;
-  image_filename: string;
-  status: string;
-  diagram: DiagramAnalysis | null;
-  stride: STRIDEReport | null;
-  error_message: string | null;
-  created_at: string;
-  completed_at: string | null;
-}
-
-export interface AnalysisListItem {
-  id: number;
-  image_filename: string;
-  status: string;
-  threat_count: number;
-  created_at: string;
-}
+import type { AnalysisListItem, AnalysisResponse } from '../../../src/types/analysis';
+export type {
+  AnalysisListItem,
+  AnalysisResponse,
+  Component,
+  DiagramAnalysis,
+  Flow,
+  Group,
+  STRIDEReport,
+  Threat,
+  ThreatSummary,
+} from '../../../src/types/analysis';
 
 export async function uploadAndAnalyze(
   imageUri: string,
