@@ -7,9 +7,9 @@ backend/stride.db
 backend/uploads/
 backend/.env
 .env
-mobile/.expo/
+frontend/mobile/.expo/
 Thumbs.db
 .DS_Store
 .vscode/
-dataset_augmented/
-data/raw/images/
+datasets/augmented/
+datasets/raw/images/

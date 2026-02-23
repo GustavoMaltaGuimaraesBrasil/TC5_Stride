@@ -1,6 +1,6 @@
-# STRIDE Threat Modeler (LLM-first)
+﻿# STRIDE Threat Modeler (LLM-first)
 
-MVP para modelagem automatizada de ameaças STRIDE a partir de diagramas de arquitetura.
+MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arquitetura.
 
 ## Visao geral
 - Entrada: imagem de diagrama (`PNG`, `JPG`, `JPEG`, `GIF`, `WEBP`).
@@ -16,9 +16,10 @@ MVP para modelagem automatizada de ameaças STRIDE a partir de diagramas de arqu
 
 ## Estrutura
 - `backend/`: API, modelos, servicos e prompts
-- `frontend/`: interface web
-- `mobile/`: app mobile
-- `docs/`: documentos de apoio
+- `frontend/web/`: interface web
+- `frontend/mobile/`: app mobile
+- `docs/`: documentacao de apoio
+- `scripts/`: scripts utilitarios
 
 ## Executar localmente
 
@@ -34,7 +35,7 @@ Documentacao Swagger: `http://localhost:8000/api/docs`
 
 ### 2) Frontend web
 ```bash
-cd frontend
+cd frontend/web
 npm install
 npm run dev
 ```
@@ -43,7 +44,7 @@ App web: `http://localhost:5173`
 
 ### 3) Mobile (opcional)
 ```bash
-cd mobile
+cd frontend/mobile
 npm install
 npx expo start
 ```
