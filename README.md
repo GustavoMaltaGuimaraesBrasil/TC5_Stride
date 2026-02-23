@@ -18,7 +18,7 @@ MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arqui
 - `backend/`: API, modelos, servicos e prompts
 - `frontend/web/`: interface web
 - `frontend/mobile/`: app mobile
-- `docs/`: documentacao de apoio
+- `docs/GUIA.md`: documentacao operacional unica
 - `scripts/`: scripts utilitarios
 
 ## Executar localmente
@@ -59,3 +59,7 @@ npx expo start
 ## Status
 - Pipeline LLM ponta a ponta implementado.
 - Proximo passo recomendado: validar com diagramas reais e ajustar prompts para qualidade de extracao.
+
+## Documentacao
+- `AGENTS.md`: regras de trabalho e protocolo de execucao.
+- `docs/GUIA.md`: arquitetura, operacao e checklist de validacao.

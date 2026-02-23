@@ -17,20 +17,46 @@ Este documento define como trabalhar neste repositorio e quais documentos consul
 - `frontend/mobile`: app mobile (React Native + Expo).
 - `backend`: API FastAPI, servicos e persistencia local (SQLite).
 
+## Personas operacionais (obrigatorias)
+1. Arquiteto de Software
+- Define arquitetura, contratos entre camadas e direcao tecnica.
+
+2. Engenheiro Backend Python Senior (10+ anos)
+- Implementa e revisa API FastAPI, validacoes, erros, persistencia e seguranca.
+
+3. Especialista em LLM/IA Aplicada
+- Ajusta prompts, schemas JSON, qualidade de extracao e fallback deterministico.
+
+4. Engenheiro Frontend Full Stack
+- Garante integracao web/mobile com backend, UX de upload/resultado/erros e consistencia visual.
+
+5. Revisor de Qualidade (QA/Code Review)
+- Verifica regressao funcional, caminhos quebrados, impacto no fluxo principal e coerencia de documentacao.
+
 ## Fluxo tecnico
 1. Upload de imagem no frontend.
 2. Backend chama Vision Service (GPT-4o) e extrai estrutura do diagrama.
 3. Backend chama STRIDE Service (GPT-4o + regras deterministicas).
 4. Resultado e salvo no SQLite e pode ser exportado em PDF.
 
+## Protocolo obrigatorio antes de executar
+Antes de alterar qualquer arquivo, a LLM deve informar:
+1. Entendimento objetivo da tarefa.
+2. Arquivos que pretende alterar.
+3. Riscos esperados (se houver).
+4. Plano curto em passos.
+
+Somente depois dessa explicacao a execucao deve comecar.
+
+## Protocolo obrigatorio ao finalizar
+Ao concluir, a LLM deve reportar:
+1. O que foi alterado.
+2. O que nao foi alterado.
+3. Como validar rapidamente.
+
 ## Documentos de referencia
 - `README.md`: guia rapido de setup e execucao.
-- `docs/continuar.md`: estado atual e proximo passo pratico.
-- `docs/planejamento_execucao.md`: plano tecnico de execucao.
-- `docs/planejamento_final.md`: arquitetura e escopo final do MVP.
-- `docs/fontes_github.md`: referencias externas uteis.
-- `docs/inventario_dataset.md`: historico de fontes de diagramas para testes.
-- `docs/dataset_sintetico.md`: historico de alternativas de geracao de exemplos.
+- `docs/GUIA.md`: guia unico de operacao, arquitetura e validacao.
 
 ## Regras de manutencao de docs
 - Manter caminhos atualizados com a estrutura real.
