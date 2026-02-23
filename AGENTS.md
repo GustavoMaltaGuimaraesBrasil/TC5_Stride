@@ -3,7 +3,7 @@
 Este documento define o modo de trabalho tecnico do repositorio.
 
 ## Objetivo
-- Entregar um produto LLM-first para analise STRIDE de diagramas de arquitetura.
+- Entregar um produto LLM-first (FIAP Software Security) para analise STRIDE de diagramas de arquitetura.
 - Entrada: imagem de arquitetura.
 - Saida: analise STRIDE em JSON e relatorio PDF.
 
@@ -27,6 +27,7 @@ Este documento define o modo de trabalho tecnico do repositorio.
 5. Resultado e salvo no banco e pode ser reaberto via `GET /api/analysis/{id}`.
 6. Imagem original e acessivel por `GET /api/analysis/{id}/image`.
 7. PDF e baixado por `GET /api/analysis/{id}/pdf`.
+8. No mobile (Expo Go), o acesso deve ocorrer na mesma rede local do backend.
 
 ## Diretriz de migracao para LangChain
 Ao implementar LangChain neste projeto:

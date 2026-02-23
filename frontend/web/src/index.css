@@ -1,11 +1,11 @@
 :root {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --border: #334155;
-  --text: #f1f5f9;
-  --text-muted: #94a3b8;
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
+  --bg: #101014;
+  --surface: #181821;
+  --border: #2d2d3a;
+  --text: #f5f5f7;
+  --text-muted: #b0b0bd;
+  --primary: #ed145b;
+  --primary-hover: #d10f4f;
   --danger: #ef4444;
   --warning: #f59e0b;
   --success: #22c55e;
@@ -39,7 +39,7 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: 16px 24px;
-  background: var(--surface);
+  background: #ffffff;
   border-bottom: 1px solid var(--border);
 }
 
@@ -50,6 +50,16 @@ header h1 {
 
 header h1 span {
   color: var(--primary);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-logo {
+  height: 26px;
+  width: auto;
+  display: block;
 }
 
 .upload-zone {

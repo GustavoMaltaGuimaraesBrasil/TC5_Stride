@@ -83,7 +83,7 @@ Regra de compatibilidade:
 ```bash
 cd backend
 # criar backend/.env com OPENAI_API_KEY
-python -m uvicorn app.main:app --reload --port 8000
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 Swagger: `http://localhost:8000/api/docs`
 
@@ -101,11 +101,16 @@ cd frontend/mobile
 npm install
 npx expo start
 ```
+Para uso no celular (Expo Go), mantenha celular e computador na mesma rede Wi-Fi.
 
 ### Menu unico (Windows)
 ```bat
 run.bat
 ```
+Menu atual:
+1. Subir web
+2. Subir mobile com QR Code (rede local)
+4. Executar teste automatico (pasta `teste`)
 
 ## Testes automatizados
 - Pasta: `teste/`

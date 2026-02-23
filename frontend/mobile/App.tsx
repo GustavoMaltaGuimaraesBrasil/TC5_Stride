@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, Alert, Platform, StatusBar as RNStatusBar } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, Alert, Platform, StatusBar as RNStatusBar, Image } from 'react-native';
 import UploadScreen from './src/screens/UploadScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
 import { uploadAndAnalyze, getAnalysis, getImageUrl, listAnalyses, deleteAnalysis } from './src/services/api';
 import type { AnalysisListItem, AnalysisResponse } from './src/services/api';
 import { colors } from './src/theme/colors';
+const fiapLogo = require('./assets/fiap-logo.jpg');
 
 type AppState = 'idle' | 'loading' | 'done' | 'error';
 
@@ -121,9 +122,16 @@ export default function App() {
       <StatusBar style="light" />
 
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>
-          <Text style={styles.headerAccent}>STRIDE</Text> Modelador de Ameacas
-        </Text>
+        <View style={styles.headerBrand}>
+          <Image
+            source={fiapLogo}
+            style={styles.headerLogo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>
+            <Text style={styles.headerAccent}>FIAP Software Security</Text>
+          </Text>
+        </View>
       </View>
 
       {state === 'idle' && (
@@ -176,14 +184,24 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight ?? 0) + 18 : 42,
     paddingBottom: 18,
     paddingHorizontal: 16,
-    backgroundColor: colors.surface,
+    backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   headerTitle: {
     color: colors.text,
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600',
+    marginTop: 6,
+  },
+  headerBrand: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  headerLogo: {
+    width: 64,
+    height: 22,
     marginTop: 6,
   },
   headerAccent: {

@@ -1,4 +1,4 @@
-# STRIDE Modelador de Ameacas (LLM-first)
+# FIAP Software Security - STRIDE Modelador de Ameacas (LLM-first)
 
 MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arquitetura.
 
@@ -26,11 +26,36 @@ MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arqui
 
 ## Executar localmente
 
+Voce pode iniciar o projeto de duas formas:
+- Script automatizado:
+  - Windows: `run.bat`
+  - macOS/Linux: `runmac.sh`
+- Execucao manual por componente (backend, web e mobile), conforme secoes abaixo.
+
+Com os scripts (`run.bat` ou `runmac.sh`) voce pode:
+1. Subir web
+2. Subir mobile com QR Code (mesma rede local)
+4. Executar teste automatico
+
+No app mobile, alem de selecionar imagem da galeria, o usuario tambem pode tirar foto para enviar o diagrama.
+
+### Uso dos scripts
+Windows:
+```bat
+run.bat
+```
+
+macOS/Linux:
+```bash
+chmod +x runmac.sh
+./runmac.sh
+```
+
 ### 1) Backend
 ```bash
 cd backend
 # criar backend/.env e preencher OPENAI_API_KEY
-python -m uvicorn app.main:app --reload --port 8000
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 Swagger: `http://localhost:8000/api/docs`
 
@@ -48,6 +73,7 @@ cd frontend/mobile
 npm install
 npx expo start
 ```
+Observacao para celular fisico: o telefone deve estar na mesma rede Wi-Fi do computador.
 
 ### 4) Menu rapido no Windows
 ```bat
@@ -55,8 +81,7 @@ run.bat
 ```
 Opcoes do menu:
 1. Subir web (sempre sobe backend antes)
-2. Subir mobile no simulador Android (sempre sobe backend antes)
-3. Subir mobile com QR Code para celular (sempre sobe backend antes)
+2. Subir mobile com QR Code (rede local, sempre sobe backend antes)
 4. Executar teste automatico da pasta `teste` (sempre sobe backend antes)
 
 ## API principal

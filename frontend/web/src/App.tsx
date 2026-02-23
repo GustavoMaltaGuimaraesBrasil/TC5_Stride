@@ -3,6 +3,7 @@ import UploadZone from './components/UploadZone'
 import ResultsView from './components/ResultsView'
 import { uploadAndAnalyze, getPdfUrl, getAnalysis, getImageUrl, listAnalyses, deleteAnalysis } from './services/api'
 import type { AnalysisListItem, AnalysisResponse } from './services/api'
+import fiapLogo from './assets/fiap-logo.jpg'
 
 type AppState = 'idle' | 'uploading' | 'opening' | 'done' | 'error'
 
@@ -105,7 +106,14 @@ export default function App() {
   return (
     <>
       <header>
-        <h1><span>STRIDE</span> Modelador de Ameacas</h1>
+        <div className="brand">
+          <img
+            src={fiapLogo}
+            alt="FIAP"
+            className="brand-logo"
+          />
+          <h1><span>FIAP Software Security</span></h1>
+        </div>
         {state === 'done' && (
           <button className="btn-secondary" onClick={handleReset}>
             + Nova Analise

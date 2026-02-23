@@ -1,8 +1,26 @@
-// Change this to your backend URL.
-// For Android emulator use 10.0.2.2, for physical device use your computer's LAN IP.
-const API_BASE = 'http://10.0.2.2:8000/api'; // Android emulator
-// const API_BASE = 'http://localhost:8000/api'; // iOS simulator
-// const API_BASE = 'http://192.168.x.x:8000/api'; // Physical device (use your LAN IP)
+import { NativeModules, Platform } from 'react-native';
+
+function resolveApiBase(): string {
+  const envBase = process.env.EXPO_PUBLIC_API_BASE?.trim();
+  if (envBase) return envBase.replace(/\/+$/, '');
+
+  // Infer host from Metro bundle URL, e.g.:
+  // http://192.168.3.192:8081/index.bundle?platform=android...
+  const scriptURL = String(NativeModules?.SourceCode?.scriptURL ?? '');
+  const hostMatch = scriptURL.match(/https?:\/\/([^/:]+):\d+/i);
+  const host = hostMatch?.[1] ?? '';
+  if (host) {
+    if (Platform.OS === 'android' && (host === 'localhost' || host === '127.0.0.1')) {
+      return 'http://10.0.2.2:8000/api';
+    }
+    return `http://${host}:8000/api`;
+  }
+
+  // iOS simulator / local fallback.
+  return 'http://localhost:8000/api';
+}
+
+const API_BASE = resolveApiBase();
 
 const EXT_TO_MIME: Record<string, string> = {
   '.png': 'image/png',

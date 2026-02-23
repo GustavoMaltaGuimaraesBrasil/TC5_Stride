@@ -101,6 +101,6 @@ if %errorlevel%==0 (
 
 echo.
 echo Subindo backend na porta 8000...
-start "TC5 Backend" cmd /k "cd /d %~dp0backend && python -m uvicorn app.main:app --reload --port 8000"
+start "TC5 Backend" cmd /k "cd /d %~dp0backend && python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
 timeout /t 2 >nul
 exit /b 0
