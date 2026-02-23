@@ -1,10 +1,15 @@
-﻿import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { colors } from '../theme/colors';
+import type { AnalysisListItem } from '../services/api';
 
 interface Props {
   onImageSelected: (uri: string, filename: string, mimeType?: string) => void;
+  analyses: AnalysisListItem[];
+  historyLoading?: boolean;
+  onOpenAnalysis: (id: number) => void;
+  onRefreshHistory: () => void;
   disabled?: boolean;
 }
 
@@ -33,7 +38,14 @@ function buildUploadMeta(
   return { filename: ext ? `${providedName}${ext}` : providedName, mimeType };
 }
 
-export default function UploadScreen({ onImageSelected, disabled }: Props) {
+export default function UploadScreen({
+  onImageSelected,
+  analyses,
+  historyLoading = false,
+  onOpenAnalysis,
+  onRefreshHistory,
+  disabled,
+}: Props) {
   const pickImage = async () => {
     if (disabled) return;
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -67,7 +79,7 @@ export default function UploadScreen({ onImageSelected, disabled }: Props) {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.hero}>
         <Text style={styles.icon}>[STRIDE]</Text>
         <Text style={styles.title}>Modelador de Ameacas STRIDE</Text>
@@ -83,15 +95,43 @@ export default function UploadScreen({ onImageSelected, disabled }: Props) {
       <TouchableOpacity style={styles.secondaryBtn} onPress={takePhoto} disabled={disabled}>
         <Text style={styles.secondaryBtnText}>Tirar Foto</Text>
       </TouchableOpacity>
-    </View>
+
+      <View style={styles.historyHeader}>
+        <Text style={styles.historyTitle}>Processamentos Salvos</Text>
+        <TouchableOpacity onPress={onRefreshHistory} disabled={disabled || historyLoading}>
+          <Text style={styles.refreshText}>{historyLoading ? 'Atualizando...' : 'Atualizar'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {analyses.length === 0 ? (
+        <Text style={styles.emptyText}>Nenhum processamento salvo ainda.</Text>
+      ) : (
+        analyses.map((item) => (
+          <TouchableOpacity
+            key={item.id}
+            style={styles.historyItem}
+            onPress={() => onOpenAnalysis(item.id)}
+            disabled={disabled}
+          >
+            <Text style={styles.historyItemTitle}>#{item.id} - {item.image_filename}</Text>
+            <Text style={styles.historyItemMeta}>
+              Status: {item.status} | Ameacas: {item.threat_count}
+            </Text>
+          </TouchableOpacity>
+        ))
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  content: {
     justifyContent: 'center',
     padding: 24,
+    paddingBottom: 32,
   },
   hero: {
     alignItems: 'center',
@@ -140,5 +180,44 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 16,
     fontWeight: '500',
+  },
+  historyHeader: {
+    marginTop: 28,
+    marginBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  historyTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  refreshText: {
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  emptyText: {
+    color: colors.textMuted,
+    fontSize: 13,
+  },
+  historyItem: {
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+  },
+  historyItemTitle: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  historyItemMeta: {
+    color: colors.textMuted,
+    fontSize: 12,
+    marginTop: 3,
   },
 });

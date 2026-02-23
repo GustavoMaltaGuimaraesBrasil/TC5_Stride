@@ -53,8 +53,9 @@ async def analyze_stride(diagram: DiagramAnalysis) -> STRIDEReport:
             {
                 "role": "user",
                 "content": (
-                    "Analyze the following software architecture for STRIDE threats. "
-                    "Pay special attention to flows crossing trust boundaries.\n\n"
+                    "Analise a arquitetura abaixo para ameacas STRIDE. "
+                    "Responda os campos textuais em portugues (pt-BR) e foque nos fluxos "
+                    "que cruzam fronteiras de confianca.\n\n"
                     "RAG CONTEXT (use these ids in reference_ids):\n"
                     f"{rag_context}\n\n"
                     "ARCHITECTURE JSON:\n"
@@ -79,11 +80,11 @@ async def analyze_stride(diagram: DiagramAnalysis) -> STRIDEReport:
         if not t.evidence:
             ev: list[str] = []
             if t.target_name:
-                ev.append(f"Target component: {t.target_name} ({t.target_id})")
+                ev.append(f"Componente alvo: {t.target_name} ({t.target_id})")
             if t.affected_flows:
-                ev.append(f"Affected flows: {', '.join(t.affected_flows)}")
+                ev.append(f"Fluxos afetados: {', '.join(t.affected_flows)}")
             if not ev:
-                ev.append("Derived from architecture component role and STRIDE category mapping.")
+                ev.append("Derivado do papel do componente na arquitetura e do mapeamento STRIDE.")
             t.evidence = ev
 
     # Deterministic enrichment: ensure summary counts match actual threats
@@ -117,33 +118,33 @@ def _ensure_baseline_coverage(diagram: DiagramAnalysis, report: STRIDEReport):
     baseline_rules = {
         "Spoofing": {
             "types": ["user", "client", "auth", "external", "api_gateway"],
-            "desc": "Without strong authentication, an attacker could impersonate a legitimate {type}.",
-            "mitigation": "Implement multi-factor authentication and mutual TLS for service-to-service communication.",
+            "desc": "Sem autenticacao forte, um atacante pode se passar por um(a) {type} legitimo(a).",
+            "mitigation": "Implementar autenticacao multifator e mTLS na comunicacao entre servicos.",
         },
         "Tampering": {
             "types": ["database", "storage", "queue"],
-            "desc": "Data in {name} could be modified by unauthorized actors if integrity controls are missing.",
-            "mitigation": "Use checksums, digital signatures, and role-based write access.",
+            "desc": "Dados em {name} podem ser alterados por atores nao autorizados se faltarem controles de integridade.",
+            "mitigation": "Usar checksums, assinaturas digitais e controle de escrita baseado em papeis.",
         },
         "Repudiation": {
             "types": ["service", "api_gateway", "web_app"],
-            "desc": "{name} may lack sufficient logging to prove which actions were performed and by whom.",
-            "mitigation": "Implement centralized, tamper-proof audit logging with timestamps and user identification.",
+            "desc": "{name} pode nao ter logs suficientes para provar quais acoes foram executadas e por quem.",
+            "mitigation": "Implementar trilha de auditoria centralizada, imutavel, com timestamp e identificacao de usuario.",
         },
         "Information Disclosure": {
             "types": ["database", "storage", "cache", "external"],
-            "desc": "Sensitive data in {name} could be exposed if encryption at rest and in transit is not enforced.",
-            "mitigation": "Encrypt data at rest (AES-256) and in transit (TLS 1.2+). Apply least-privilege access.",
+            "desc": "Dados sensiveis em {name} podem ser expostos se nao houver criptografia em repouso e em transito.",
+            "mitigation": "Criptografar dados em repouso (AES-256) e em transito (TLS 1.2+), com acesso de menor privilegio.",
         },
         "Denial of Service": {
             "types": ["api_gateway", "load_balancer", "web_app", "service"],
-            "desc": "{name} is exposed to potential denial-of-service attacks without rate limiting.",
-            "mitigation": "Implement rate limiting, auto-scaling, and DDoS protection (e.g., WAF, CDN).",
+            "desc": "{name} fica exposto a ataques de negacao de servico sem controle de taxa.",
+            "mitigation": "Implementar rate limiting, auto scaling e protecao DDoS (por exemplo, WAF e CDN).",
         },
         "Elevation of Privilege": {
             "types": ["auth", "service", "database"],
-            "desc": "Insufficient authorization checks in {name} could allow privilege escalation.",
-            "mitigation": "Enforce principle of least privilege, RBAC, and validate all authorization on the server side.",
+            "desc": "Verificacoes de autorizacao insuficientes em {name} podem permitir elevacao de privilegio.",
+            "mitigation": "Aplicar menor privilegio, RBAC e validacao de autorizacao sempre no lado servidor.",
         },
     }
 
@@ -164,7 +165,7 @@ def _ensure_baseline_coverage(diagram: DiagramAnalysis, report: STRIDEReport):
                         severity="medium",
                         mitigation=rule["mitigation"],
                         affected_flows=[],
-                        evidence=[f"Target component type: {comp.type}", "Baseline STRIDE category coverage rule applied."],
+                        evidence=[f"Tipo do componente alvo: {comp.type}", "Regra de cobertura basica STRIDE aplicada."],
                         reference_ids=rag.default_reference_ids(),
                     )
                 )

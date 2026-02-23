@@ -116,3 +116,7 @@ export async function listAnalyses(): Promise<AnalysisListItem[]> {
 export function getPdfUrl(id: number): string {
   return `${API_BASE}/analysis/${id}/pdf`;
 }
+
+export function getImageUrl(id: number): string {
+  return `${API_BASE}/analysis/${id}/image`;
+}

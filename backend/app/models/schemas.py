@@ -72,6 +72,7 @@ class STRIDEReport(BaseModel):
 class AnalysisResponse(BaseModel):
     id: int
     image_filename: str
+    image_url: str | None = None
     status: str
     diagram: DiagramAnalysis | None = None
     stride: STRIDEReport | None = None
@@ -85,6 +86,7 @@ class AnalysisResponse(BaseModel):
 class AnalysisListItem(BaseModel):
     id: int
     image_filename: str
+    image_url: str | None = None
     status: str
     threat_count: int = 0
     created_at: datetime

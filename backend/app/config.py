@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:5173"]
 
     # App
-    app_title: str = "STRIDE Threat Modeler"
+    app_title: str = "STRIDE Modelador de Ameacas"
     app_version: str = "2.0.0"
     debug: bool = False
 

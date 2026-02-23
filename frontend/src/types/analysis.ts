@@ -1,6 +1,7 @@
 export interface AnalysisResponse {
   id: number;
   image_filename: string;
+  image_url: string | null;
   status: string;
   diagram: DiagramAnalysis | null;
   stride: STRIDEReport | null;
@@ -68,6 +69,7 @@ export interface Threat {
 export interface AnalysisListItem {
   id: number;
   image_filename: string;
+  image_url: string | null;
   status: string;
   threat_count: number;
   created_at: string;

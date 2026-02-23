@@ -1,13 +1,14 @@
 ﻿"""Analysis endpoints - upload image, run pipeline, retrieve results."""
 
 import logging
+import mimetypes
 import shutil
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from fastapi.responses import Response
+from fastapi.responses import FileResponse, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,6 +26,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
+
+
+def _image_url(analysis_id: int) -> str:
+    return f"/api/analysis/{analysis_id}/image"
 
 
 @router.post("/analysis", response_model=AnalysisResponse, status_code=201)
@@ -78,6 +83,7 @@ async def create_analysis(
         return AnalysisResponse(
             id=analysis_record.id,
             image_filename=analysis_record.image_filename,
+            image_url=_image_url(analysis_record.id),
             status=analysis_record.status,
             diagram=diagram,
             stride=stride_report,
@@ -108,6 +114,7 @@ async def list_analyses(session: AsyncSession = Depends(get_session)):
             AnalysisListItem(
                 id=row.id,
                 image_filename=row.image_filename,
+                image_url=_image_url(row.id),
                 status=row.status,
                 threat_count=threat_count,
                 created_at=row.created_at,
@@ -130,6 +137,7 @@ async def get_analysis(analysis_id: int, session: AsyncSession = Depends(get_ses
     return AnalysisResponse(
         id=row.id,
         image_filename=row.image_filename,
+        image_url=_image_url(row.id),
         status=row.status,
         diagram=diagram,
         stride=stride_data,
@@ -163,4 +171,24 @@ async def download_pdf(analysis_id: int, session: AsyncSession = Depends(get_ses
         content=pdf_bytes,
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename=stride_report_{analysis_id}.pdf"},
+    )
+
+
+@router.get("/analysis/{analysis_id}/image")
+async def get_analysis_image(analysis_id: int, session: AsyncSession = Depends(get_session)):
+    """Return the original uploaded image for a specific analysis."""
+    result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
+    row = result.scalar_one_or_none()
+    if not row:
+        raise HTTPException(404, "Analise nao encontrada")
+
+    image_path = Path(row.image_path)
+    if not image_path.exists():
+        raise HTTPException(404, "Imagem da analise nao encontrada")
+
+    media_type, _ = mimetypes.guess_type(image_path.name)
+    return FileResponse(
+        path=str(image_path),
+        media_type=media_type or "application/octet-stream",
+        filename=row.image_filename,
     )

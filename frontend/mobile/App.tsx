@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
 import UploadScreen from './src/screens/UploadScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
-import { uploadAndAnalyze } from './src/services/api';
-import type { AnalysisResponse } from './src/services/api';
+import { uploadAndAnalyze, getAnalysis, getImageUrl, listAnalyses } from './src/services/api';
+import type { AnalysisListItem, AnalysisResponse } from './src/services/api';
 import { colors } from './src/theme/colors';
 
 type AppState = 'idle' | 'loading' | 'done' | 'error';
@@ -16,19 +16,65 @@ export default function App() {
   const [error, setError] = useState('');
   const [filename, setFilename] = useState('');
   const [imageUri, setImageUri] = useState('');
+  const [loadingStage, setLoadingStage] = useState('Extraindo componentes, grupos e fluxos...');
+  const [history, setHistory] = useState<AnalysisListItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  useEffect(() => {
+    void loadHistory();
+  }, []);
+
+  const loadHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const data = await listAnalyses();
+      setHistory(data);
+    } catch {
+      setHistory([]);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   const handleImageSelected = async (uri: string, name: string, mimeType?: string) => {
     setState('loading');
     setFilename(name);
     setImageUri(uri);
+    setLoadingStage('Extraindo componentes, grupos e fluxos...');
     setError('');
 
     try {
       const data = await uploadAndAnalyze(uri, name, mimeType);
       setResult(data);
+      setImageUri(data.image_url || getImageUrl(data.id));
       setState('done');
+      void loadHistory();
     } catch (err: any) {
       setError(err.message || 'Erro desconhecido');
+      setState('error');
+    }
+  };
+
+  const handleOpenAnalysis = async (analysisId: number) => {
+    setState('loading');
+    setFilename(`Analise #${analysisId}`);
+    setImageUri('');
+    setLoadingStage('Carregando processamento salvo...');
+    setError('');
+
+    try {
+      const data = await getAnalysis(analysisId);
+      if (data.status !== 'done' || !data.diagram || !data.stride) {
+        const message = data.status === 'error'
+          ? (data.error_message || 'A analise falhou e nao possui resultado para abertura.')
+          : 'A analise ainda esta em processamento. Tente novamente em instantes.';
+        throw new Error(message);
+      }
+      setResult(data);
+      setImageUri(data.image_url || getImageUrl(data.id));
+      setState('done');
+    } catch (err: any) {
+      setError(err.message || 'Falha ao abrir analise');
       setState('error');
     }
   };
@@ -39,28 +85,34 @@ export default function App() {
     setError('');
     setFilename('');
     setImageUri('');
+    setLoadingStage('Extraindo componentes, grupos e fluxos...');
+    void loadHistory();
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>
-          <Text style={styles.headerAccent}>STRIDE</Text> Threat Modeler
+          <Text style={styles.headerAccent}>STRIDE</Text> Modelador de Ameacas
         </Text>
       </View>
 
-      {/* Content */}
       {state === 'idle' && (
-        <UploadScreen onImageSelected={handleImageSelected} />
+        <UploadScreen
+          onImageSelected={handleImageSelected}
+          analyses={history}
+          historyLoading={historyLoading}
+          onOpenAnalysis={handleOpenAnalysis}
+          onRefreshHistory={loadHistory}
+        />
       )}
 
       {state === 'loading' && (
         <LoadingScreen
           filename={filename}
-          stage="Extraindo componentes, grupos e fluxos..."
+          stage={loadingStage}
         />
       )}
 
@@ -70,7 +122,7 @@ export default function App() {
             <Text style={styles.errorText}>Erro: {error}</Text>
           </View>
           <TouchableOpacity style={styles.retryBtn} onPress={handleReset}>
-            <Text style={styles.retryBtnText}>Tentar Novamente</Text>
+            <Text style={styles.retryBtnText}>Voltar</Text>
           </TouchableOpacity>
         </View>
       )}

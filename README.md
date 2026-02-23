@@ -1,4 +1,4 @@
-﻿# STRIDE Threat Modeler (LLM-first)
+# STRIDE Modelador de Ameacas (LLM-first)
 
 MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arquitetura.
 
@@ -7,6 +7,8 @@ MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arqui
 - Estagio 1 (Vision): GPT-4o extrai `context_summary`, componentes, grupos e fluxos em JSON.
 - Estagio 2 (STRIDE): GPT-4o + RAG local + regras deterministicas gera ameacas e mitigacoes.
 - Saida: resposta JSON, persistencia em SQLite e relatorio PDF.
+- Idioma: resultados para o usuario final em portugues (pt-BR).
+- Evolucao em andamento: adocao gradual de LangChain para orquestracao, RAG e observabilidade.
 
 ## Stack
 - Backend: FastAPI + SQLAlchemy async + SQLite
@@ -18,7 +20,8 @@ MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arqui
 - `backend/`: API, modelos, servicos e prompts
 - `frontend/web/`: interface web
 - `frontend/mobile/`: app mobile
-- `docs/GUIA.md`: documentacao operacional unica
+- `docs/GUIA.md`: guia operacional unico
+- `teste/`: imagens de validacao, script de teste e relatorios
 - `scripts/`: scripts utilitarios
 
 ## Executar localmente
@@ -29,8 +32,7 @@ cd backend
 # criar backend/.env e preencher OPENAI_API_KEY
 python -m uvicorn app.main:app --reload --port 8000
 ```
-
-Documentacao Swagger: `http://localhost:8000/api/docs`
+Swagger: `http://localhost:8000/api/docs`
 
 ### 2) Frontend web
 ```bash
@@ -38,7 +40,6 @@ cd frontend/web
 npm install
 npm run dev
 ```
-
 App web: `http://localhost:5173`
 
 ### 3) Mobile (opcional)
@@ -48,33 +49,55 @@ npm install
 npx expo start
 ```
 
+### 4) Menu rapido no Windows
+```bat
+run.bat
+```
+Opcoes do menu:
+1. Subir web (sempre sobe backend antes)
+2. Subir mobile no simulador Android (sempre sobe backend antes)
+3. Subir mobile com QR Code para celular (sempre sobe backend antes)
+4. Executar teste automatico da pasta `teste` (sempre sobe backend antes)
+
 ## API principal
 - `POST /api/analysis`: upload e analise completa
-- `GET /api/analysis`: historico
-- `GET /api/analysis/{id}`: detalhes
+- `GET /api/analysis`: lista processamentos salvos
+- `GET /api/analysis/{id}`: detalhes do processamento salvo
+- `GET /api/analysis/{id}/image`: imagem original enviada
 - `GET /api/analysis/{id}/pdf`: download do relatorio
 - `GET /api/health`: health check
 
 ## Rastreabilidade STRIDE (RAG)
-- Cada ameaca retornada inclui:
-  - `evidence`: evidencias observadas no diagrama/fluxos/boundaries.
-  - `reference_ids`: ids de referencias de seguranca usadas na decisao (ex.: `STRIDE-001`).
-- Base local de conhecimento: `backend/app/knowledge/stride_rag.md`.
+Cada item em `threats[]` inclui:
+- `evidence`: evidencias observadas no diagrama/fluxos/fronteiras.
+- `reference_ids`: ids das referencias de seguranca usadas na decisao (ex.: `STRIDE-001`).
+
+Base local de conhecimento: `backend/app/knowledge/stride_rag.md`.
+
+## Roadmap LangChain
+Fase 1 (documentacao e desenho):
+1. Definir arquitetura alvo com chains separadas para Vision e STRIDE.
+2. Definir contratos de entrada/saida e estrategia de parser estruturado.
+3. Definir estrategia de RAG (chunking, retrieval e citacao de fontes).
+
+Fase 2 (implementacao backend):
+1. Introduzir camada `app/services/langchain/` com chain de Vision.
+2. Introduzir chain STRIDE com contexto RAG e validacao de schema.
+3. Manter endpoints atuais sem quebra de contrato.
+
+Fase 3 (qualidade e operacao):
+1. Instrumentar rastreabilidade de execucao (traces por analise).
+2. Comparar qualidade entre pipeline atual e pipeline LangChain.
+3. Consolidar pipeline unico e remover duplicacao.
 
 ## Exibicao de resultado
-- Web e mobile exibem:
-  - a imagem submetida,
-  - o `context_summary` da etapa Vision,
-  - e depois as listagens de ameacas/recomendacoes.
-- O PDF tambem inclui:
-  - imagem submetida,
-  - contexto da infraestrutura,
-  - e listagens STRIDE.
-
-## Status
-- Pipeline LLM ponta a ponta implementado.
-- Proximo passo recomendado: validar com diagramas reais e ajustar prompts para qualidade de extracao.
+- Web e mobile permitem processar nova imagem ou abrir processamento salvo.
+- A tela de resultado exibe, nesta ordem:
+  1. imagem submetida,
+  2. `context_summary`,
+  3. resumo e listagens STRIDE.
+- O PDF tambem inclui imagem submetida, contexto e listagens STRIDE.
 
 ## Documentacao
-- `AGENTS.md`: regras de trabalho e protocolo de execucao.
+- `AGENTS.md`: protocolo operacional de execucao.
 - `docs/GUIA.md`: arquitetura, operacao e checklist de validacao.

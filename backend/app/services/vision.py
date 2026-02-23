@@ -80,7 +80,11 @@ async def extract_diagram(image_path: str) -> DiagramAnalysis:
                 "content": [
                     {
                         "type": "text",
-                        "text": "Analyze this architecture diagram. Extract all components, groups/boundaries, and flows/connections. Return ONLY the JSON.",
+                        "text": (
+                            "Analise este diagrama de arquitetura e extraia todos os componentes, "
+                            "grupos/fronteiras e fluxos/conexoes. Retorne SOMENTE JSON. "
+                            "Escreva o campo context_summary em portugues (pt-BR)."
+                        ),
                     },
                     {
                         "type": "image_url",
