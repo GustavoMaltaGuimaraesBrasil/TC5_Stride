@@ -5,4 +5,10 @@
 **/dist/
 backend/stride.db
 backend/uploads/
+backend/.env
+.env
 mobile/.expo/
+mobile/
+Thumbs.db
+.DS_Store
+.vscode/
