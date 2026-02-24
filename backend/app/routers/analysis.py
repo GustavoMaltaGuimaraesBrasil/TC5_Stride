@@ -219,12 +219,19 @@ async def get_analysis_image(analysis_id: int, session: AsyncSession = Depends(g
     if not image_path.exists():
         raise HTTPException(404, "Imagem da analise nao encontrada")
 
-    # Resolve MIME para retorno apropriado ao cliente.
+    # Para formatos com baixa compatibilidade no app mobile (ex.: BMP/HEIC),
+    # prioriza a versao normalizada em PNG quando existir.
+    normalized_path = image_path.with_suffix(".normalized.png")
+    serve_path = image_path
     media_type, _ = mimetypes.guess_type(image_path.name)
+    if image_path.suffix.lower() in {".bmp", ".heic", ".heif"} and normalized_path.exists():
+        serve_path = normalized_path
+        media_type = "image/png"
+
     return FileResponse(
-        path=str(image_path),
+        path=str(serve_path),
         media_type=media_type or "application/octet-stream",
-        filename=row.image_filename,
+        headers={"Cache-Control": "no-store"},
     )
 
 

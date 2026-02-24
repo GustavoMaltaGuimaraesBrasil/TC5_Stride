@@ -1,4 +1,4 @@
-/** Renderiza cards de resumo com contagem de ameacas STRIDE. */
+﻿/** Renderiza cards de resumo com contagem de ameacas STRIDE. */
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
@@ -13,9 +13,9 @@ interface Props {
 export default function SummaryCards({ summary }: Props) {
   const cards = [
     { label: 'Total', value: summary.total_threats, color: colors.text },
-    { label: 'Crítico', value: summary.critical, color: severityColor('critical') },
+    { label: 'Cr\u00edtico', value: summary.critical, color: severityColor('critical') },
     { label: 'Alto', value: summary.high, color: severityColor('high') },
-    { label: 'Médio', value: summary.medium, color: severityColor('medium') },
+    { label: 'M\u00e9dio', value: summary.medium, color: severityColor('medium') },
     { label: 'Baixo', value: summary.low, color: severityColor('low') },
   ];
 
@@ -54,10 +54,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   label: {
-    fontSize: 10,
+    fontSize: 9,
     color: colors.textMuted,
-    textTransform: 'uppercase',
+    textAlign: 'center',
     marginTop: 2,
-    letterSpacing: 0.5,
+    letterSpacing: 0.2,
+    maxWidth: '100%',
   },
 });
