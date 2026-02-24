@@ -1,15 +1,25 @@
-# FIAP Software Security - STRIDE Modelador de Ameacas (LLM-first)
+# FIAP Software Security - STRIDE Modelador de Ameaças (LLM-first)
 
-MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arquitetura.
+MVP para modelagem automatizada de ameaças STRIDE a partir de diagramas de arquitetura.
 
-## Visao geral
+## O que é STRIDE
+STRIDE é um modelo de ameaças da Microsoft usado para identificar riscos de segurança em arquiteturas de software.
+Ele organiza riscos em seis categorias:
+- `S` Spoofing (falsificação de identidade)
+- `T` Tampering (violação de integridade)
+- `R` Repudiation (repúdio)
+- `I` Information Disclosure (divulgação de informação)
+- `D` Denial of Service (negação de serviço)
+- `E` Elevation of Privilege (elevação de privilégio)
+
+## Visão geral
 - Entrada: imagem de diagrama (`PNG`, `JPG`, `JPEG`, `GIF`, `WEBP`, `BMP`).
-- Estagio 1 (Vision): GPT-4o extrai `context_summary`, componentes, grupos e fluxos em JSON.
-- Estagio 2 (STRIDE): GPT-4o + RAG local + regras deterministicas gera ameacas e mitigacoes.
-- Voz (TTS): backend sintetiza narracao em pt-BR e web/mobile pre-carregam 3 audios ao abrir o resultado.
-- Saida: resposta JSON, persistencia em SQLite e relatorio PDF.
-- Idioma: resultados para o usuario final em portugues (pt-BR).
-- Evolucao em andamento: adocao gradual de LangChain para orquestracao, RAG e observabilidade.
+- Estágio 1 (Vision): GPT-4o extrai `context_summary`, componentes, grupos e fluxos em JSON.
+- Estágio 2 (STRIDE): GPT-4o + RAG local + regras determinísticas gera ameaças e mitigações.
+- Voz (TTS): backend sintetiza narração em pt-BR e web/mobile pré-carregam 3 áudios ao abrir o resultado.
+- Saída: resposta JSON, persistência em SQLite e relatório PDF.
+- Idioma: resultados para o usuário final em português (pt-BR).
+- Evolução em andamento: adoção gradual de LangChain para orquestração, RAG e observabilidade.
 
 ## Stack
 - Backend: FastAPI + SQLAlchemy async + SQLite
@@ -18,28 +28,50 @@ MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arqui
 - IA: OpenAI GPT-4o (vision + texto)
 
 ## Estrutura
-- `backend/`: API, modelos, servicos e prompts
+- `backend/`: API, modelos, serviços e prompts
 - `frontend/web/`: interface web
 - `frontend/mobile/`: app mobile
-- `docs/GUIA.md`: guia operacional unico
-- `teste/`: imagens de validacao, script de teste e relatorios
-- `scripts/`: scripts utilitarios
+- `docs/GUIA.md`: guia operacional único
+- `teste/`: imagens de validação, script de teste e relatórios
+
+## Preparar ambiente (Python + .env)
+```bash
+cd backend
+# criar ambiente virtual local
+python -m venv .venv
+
+# ativar ambiente virtual (uso automático no terminal atual)
+# Linux/macOS:
+source .venv/bin/activate
+# Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+
+# instalar dependências Python
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+# copiar arquivo de exemplo e ajustar OPENAI_API_KEY
+# Linux/macOS:
+cp .env.example .env
+# Windows (PowerShell):
+Copy-Item .env.example .env
+```
 
 ## Executar localmente
 
-Voce pode iniciar o projeto de duas formas:
+Você pode iniciar o projeto de duas formas:
 - Script automatizado:
   - Windows: `run.bat`
   - macOS/Linux: `runmac.sh`
-- Execucao manual por componente (backend, web e mobile), conforme secoes abaixo.
+- Execução manual por componente (backend, web e mobile), conforme seções abaixo.
 
-Com os scripts (`run.bat` ou `runmac.sh`) voce pode:
+Com os scripts (`run.bat` ou `runmac.sh`) você pode:
 1. Subir web
 2. Subir mobile com QR Code (mesma rede local)
-4. Executar teste automatico
+4. Executar teste automático
 
-No app mobile, alem de selecionar imagem da galeria, o usuario tambem pode tirar foto para enviar o diagrama.
-O usuario nao grava audio: a voz e gerada automaticamente pelo sistema para ler contexto, criticidade e mitigacoes.
+No app mobile, além de selecionar imagem da galeria, o usuário também pode tirar foto para enviar o diagrama.
+O usuário não grava áudio: a voz é gerada automaticamente pelo sistema para ler contexto, criticidade e mitigações.
 
 ### Uso dos scripts
 Windows:
@@ -56,7 +88,7 @@ chmod +x runmac.sh
 ### 1) Backend
 ```bash
 cd backend
-# criar backend/.env e preencher OPENAI_API_KEY
+# iniciar API
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 Swagger: `http://localhost:8000/api/docs`
@@ -75,64 +107,64 @@ cd frontend/mobile
 npm install
 npx expo start
 ```
-Observacao para celular fisico: o telefone deve estar na mesma rede Wi-Fi do computador.
+Observação para celular físico: o telefone deve estar na mesma rede Wi-Fi do computador.
 
-### 4) Menu rapido no Windows
+### 4) Menu rápido no Windows
 ```bat
 run.bat
 ```
-Opcoes do menu:
+Opções do menu:
 1. Subir web (sempre sobe backend antes)
 2. Subir mobile com QR Code (rede local, sempre sobe backend antes)
-4. Executar teste automatico da pasta `teste` (sempre sobe backend antes)
+4. Executar teste automático da pasta `teste` (sempre sobe backend antes)
 
 ## API principal
-- `POST /api/analysis`: upload e analise completa
+- `POST /api/analysis`: upload e análise completa
 - `GET /api/analysis`: lista processamentos salvos
 - `GET /api/analysis/{id}`: detalhes do processamento salvo
 - `GET /api/analysis/{id}/image`: imagem original enviada
-- `GET /api/analysis/{id}/pdf`: download do relatorio
-- `POST /api/audio/speech`: sintetiza texto em audio (mp3 base64) para leitura da analise em pt-BR
-- `POST /api/audio/transcribe`: endpoint backend de transcricao (nao exposto na UI do usuario final)
+- `GET /api/analysis/{id}/pdf`: download do relatório
+- `POST /api/audio/speech`: sintetiza texto em áudio (mp3 base64) para leitura da análise em pt-BR
+- `POST /api/audio/transcribe`: endpoint backend de transcrição (não exposto na UI do usuário final)
 - `GET /api/health`: health check
 
 ## Rastreabilidade STRIDE (RAG)
 Cada item em `threats[]` inclui:
-- `evidence`: evidencias observadas no diagrama/fluxos/fronteiras.
-- `reference_ids`: ids das referencias de seguranca usadas na decisao (ex.: `STRIDE-001`).
+- `evidence`: evidências observadas no diagrama/fluxos/fronteiras.
+- `reference_ids`: ids das referências de segurança usadas na decisão (ex.: `STRIDE-001`).
 
 Base local de conhecimento: `backend/app/knowledge/stride_rag.md`.
 
 ## Roadmap LangChain
-Fase 1 (documentacao e desenho):
+Fase 1 (documentação e desenho):
 1. Definir arquitetura alvo com chains separadas para Vision e STRIDE.
-2. Definir contratos de entrada/saida e estrategia de parser estruturado.
-3. Definir estrategia de RAG (chunking, retrieval e citacao de fontes).
+2. Definir contratos de entrada/saída e estratégia de parser estruturado.
+3. Definir estratégia de RAG (chunking, retrieval e citação de fontes).
 
-Fase 2 (implementacao backend):
+Fase 2 (implementação backend):
 1. Introduzir camada `app/services/langchain/` com chain de Vision.
-2. Introduzir chain STRIDE com contexto RAG e validacao de schema.
+2. Introduzir chain STRIDE com contexto RAG e validação de schema.
 3. Manter endpoints atuais sem quebra de contrato.
 
-Fase 3 (qualidade e operacao):
-1. Instrumentar rastreabilidade de execucao (traces por analise).
+Fase 3 (qualidade e operação):
+1. Instrumentar rastreabilidade de execução (traces por análise).
 2. Comparar qualidade entre pipeline atual e pipeline LangChain.
-3. Consolidar pipeline unico e remover duplicacao.
+3. Consolidar pipeline único e remover duplicação.
 
-## Exibicao de resultado
+## Exibição de resultado
 - Web e mobile permitem processar nova imagem ou abrir processamento salvo.
 - A tela de resultado exibe, nesta ordem:
   1. imagem submetida,
   2. `context_summary`,
   3. resumo e listagens STRIDE.
-- Ao concluir ou reabrir uma analise, web e mobile enviam 3 textos para TTS e deixam o audio pre-carregado:
+- Ao concluir ou reabrir uma análise, web e mobile enviam 3 textos para TTS e deixam o áudio pré-carregado:
   1. contexto da infraestrutura + criticidade geral,
-  2. ameacas e mitigacoes,
-  3. recomendacoes.
-- O usuario aciona a reproducao pelos icones de audio em cada secao.
+  2. ameaças e mitigações,
+  3. recomendações.
+- O usuário aciona a reprodução pelos ícones de áudio em cada seção.
 - Nota de custo: para economizar chamadas TTS, desabilite `PRELOAD_TTS_ON_RESULT` em `frontend/web/src/App.tsx` e `frontend/mobile/App.tsx`.
-- O PDF tambem inclui imagem submetida, contexto e listagens STRIDE.
+- O PDF também inclui imagem submetida, contexto e listagens STRIDE.
 
-## Documentacao
-- `AGENTS.md`: protocolo operacional de execucao.
-- `docs/GUIA.md`: arquitetura, operacao e checklist de validacao.
+## Documentação
+- `AGENTS.md`: protocolo operacional de execução.
+- `docs/GUIA.md`: arquitetura, operação e checklist de validação.

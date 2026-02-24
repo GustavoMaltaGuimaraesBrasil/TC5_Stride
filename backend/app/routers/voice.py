@@ -1,4 +1,4 @@
-"""Voice endpoints: speech synthesis and transcription."""
+"""Endpoints de voz: sintese de fala e transcricao."""
 
 from fastapi import APIRouter, File, UploadFile
 
@@ -10,12 +10,14 @@ router = APIRouter()
 
 @router.post("/audio/speech", response_model=TTSSpeechResponse)
 async def tts_speech(payload: TTSSpeechRequest):
+    """Executa o metodo tts_speech."""
     audio_b64 = await voice.synthesize_speech(payload.text)
     return TTSSpeechResponse(audioBase64=audio_b64, format="mp3")
 
 
 @router.post("/audio/transcribe", response_model=TranscriptionResponse)
 async def transcribe(file: UploadFile = File(...)):
+    """Executa o metodo transcribe."""
     audio_bytes = await file.read()
     text, model_used = await voice.transcribe_audio(
         audio_bytes=audio_bytes,

@@ -1,8 +1,9 @@
+/** Ponto de bootstrap mobile para o runtime Expo. */
+
 import { registerRootComponent } from 'expo';
 
 import App from './App';
 
-// registerRootComponent calls AppRegistry.registerComponent('main', () => App);
-// It also ensures that whether you load the app in Expo Go or in a native build,
-// the environment is set up appropriately
+// Registra o componente raiz do app no Expo.
+// Isso garante que a aplicacao funcione tanto no Expo Go quanto em build nativa.
 registerRootComponent(App);

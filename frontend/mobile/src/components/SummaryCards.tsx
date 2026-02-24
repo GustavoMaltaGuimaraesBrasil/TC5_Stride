@@ -1,3 +1,5 @@
+/** Renderiza cards de resumo com contagem de ameacas STRIDE. */
+
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, severityColor } from '../theme/colors';
@@ -7,6 +9,7 @@ interface Props {
   summary: ThreatSummary;
 }
 
+/** Executa a funcao SummaryCards. */
 export default function SummaryCards({ summary }: Props) {
   const cards = [
     { label: 'Total', value: summary.total_threats, color: colors.text },

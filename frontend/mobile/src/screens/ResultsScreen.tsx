@@ -1,4 +1,6 @@
-﻿import React from 'react';
+/** Tela de resultado com preview do diagrama, ameacas, recomendacoes e acoes. */
+
+import React from 'react';
 import {
   View,
   Text,
@@ -6,7 +8,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Linking,
-  SafeAreaView,
   Image,
 } from 'react-native';
 import { colors } from '../theme/colors';
@@ -25,6 +26,7 @@ interface Props {
   onSpeakBottom: () => void;
 }
 
+/** Executa a funcao ResultsScreen. */
 export default function ResultsScreen({
   result,
   imageUri,
@@ -47,12 +49,13 @@ export default function ResultsScreen({
     );
   }
 
+  /** Executa a funcao handleDownloadPdf. */
   const handleDownloadPdf = () => {
     Linking.openURL(getPdfUrl(result.id));
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.safe}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Resultado da Análise</Text>
         <Text style={styles.filename}>{result.image_filename}</Text>
@@ -120,7 +123,7 @@ export default function ResultsScreen({
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

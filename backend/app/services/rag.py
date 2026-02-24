@@ -1,4 +1,4 @@
-"""Lightweight local RAG for STRIDE references."""
+"""RAG local leve para referencias STRIDE."""
 
 from __future__ import annotations
 
@@ -12,10 +12,12 @@ _WORD_RE = re.compile(r"[a-zA-Z0-9_]+")
 
 
 def _tokenize(text: str) -> set[str]:
+    """Executa o metodo _tokenize."""
     return {w.lower() for w in _WORD_RE.findall(text)}
 
 
 def _load_chunks() -> list[dict[str, str]]:
+    """Executa o metodo _load_chunks."""
     raw = _KB_PATH.read_text(encoding="utf-8")
     chunks: list[dict[str, str]] = []
     current: dict[str, str] | None = None
@@ -42,6 +44,7 @@ _CHUNKS = _load_chunks()
 
 
 def retrieve_stride_context(query: str, top_k: int = 5) -> list[dict[str, str]]:
+    """Executa o metodo retrieve_stride_context."""
     query_tokens = _tokenize(query)
     scored: list[tuple[int, dict[str, str]]] = []
 
@@ -58,6 +61,7 @@ def retrieve_stride_context(query: str, top_k: int = 5) -> list[dict[str, str]]:
 
 
 def format_context_for_prompt(chunks: list[dict[str, str]]) -> str:
+    """Executa o metodo format_context_for_prompt."""
     lines: list[str] = []
     for c in chunks:
         lines.append(f"[{c['id']}] {c['title']}")
@@ -67,4 +71,5 @@ def format_context_for_prompt(chunks: list[dict[str, str]]) -> str:
 
 
 def default_reference_ids() -> list[str]:
+    """Executa o metodo default_reference_ids."""
     return ["STRIDE-007", "STRIDE-008"]

@@ -1,4 +1,4 @@
-﻿"""Analysis endpoints - upload image, run pipeline, retrieve results."""
+﻿"""Endpoints de analise: upload de imagem, execucao do pipeline e consulta de resultados."""
 
 import logging
 import mimetypes
@@ -14,13 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.models.database import Analysis, get_session
-from app.models.schemas import (
-    AnalysisListItem,
-    AnalysisResponse,
-    DiagramAnalysis,
-    STRIDEReport,
-)
-from app.services import vision, stride, report
+from app.models.schemas import AnalysisListItem, AnalysisResponse, DiagramAnalysis, STRIDEReport
+from app.services import report, stride, vision
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -29,10 +24,12 @@ ALLOWED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
 
 
 def _image_url(analysis_id: int) -> str:
+    """Executa o metodo _image_url."""
     return f"/api/analysis/{analysis_id}/image"
 
 
 def _delete_file_if_exists(path: Path):
+    """Executa o metodo _delete_file_if_exists."""
     try:
         if path.exists():
             path.unlink()
@@ -45,49 +42,63 @@ async def create_analysis(
     file: UploadFile = File(...),
     session: AsyncSession = Depends(get_session),
 ):
-    """Upload an architecture diagram and run the full STRIDE pipeline."""
+    """Executa o metodo create_analysis."""
+    # Usa o nome original do arquivo para rastreabilidade no historico.
     original_filename = file.filename or "upload"
+    # Extrai extensao para validar tipo de entrada.
     ext = Path(original_filename).suffix.lower()
+    # Bloqueia extensoes nao suportadas antes de gravar em disco.
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             400,
             (
-                f"Tipo de arquivo não suportado: {ext}. "
+                f"Tipo de arquivo nao suportado: {ext}. "
                 "Use PNG, JPG, JPEG, GIF, WEBP ou BMP."
             ),
         )
 
+    # Gera nome unico para evitar colisao entre uploads com o mesmo nome.
     unique_name = f"{uuid.uuid4().hex}{ext}"
+    # Define caminho final no diretorio de uploads configurado.
     upload_path = Path(settings.upload_dir) / unique_name
+    # Persiste arquivo bruto no disco local.
     with open(upload_path, "wb") as f:
         shutil.copyfileobj(file.file, f)
 
+    # Cria registro inicial com status de processamento.
     analysis_record = Analysis(
         image_filename=original_filename,
         image_path=str(upload_path),
         status="processing",
     )
+    # Salva no banco para disponibilizar id ao frontend.
     session.add(analysis_record)
     await session.commit()
     await session.refresh(analysis_record)
 
     try:
-        logger.info("Stage 1: Extracting diagram (analysis_id=%d)", analysis_record.id)
+        # Etapa 1: extracao estruturada da arquitetura a partir da imagem.
+        logger.info("Etapa 1: extraindo diagrama (analysis_id=%d)", analysis_record.id)
         diagram = await vision.extract_diagram(str(upload_path))
 
+        # Armazena resultado da etapa de Vision no registro.
         analysis_record.diagram_json = diagram.model_dump()
 
-        logger.info("Stage 2: STRIDE analysis (analysis_id=%d)", analysis_record.id)
+        # Etapa 2: geracao de ameacas e mitigacoes STRIDE.
+        logger.info("Etapa 2: analise STRIDE (analysis_id=%d)", analysis_record.id)
         stride_report = await stride.analyze_stride(diagram)
 
+        # Atualiza o registro com saida final e status concluido.
         analysis_record.stride_json = stride_report.model_dump()
         analysis_record.status = "done"
         analysis_record.error_message = None
         analysis_record.completed_at = datetime.now(timezone.utc)
 
+        # Confirma transacao final de sucesso.
         await session.commit()
         await session.refresh(analysis_record)
 
+        # Retorna payload completo para exibicao imediata no cliente.
         return AnalysisResponse(
             id=analysis_record.id,
             image_filename=analysis_record.image_filename,
@@ -101,23 +112,29 @@ async def create_analysis(
         )
 
     except Exception:
-        logger.exception("Pipeline failed for analysis_id=%d", analysis_record.id)
+        # Em falha, registra erro para permitir abertura posterior no historico.
+        logger.exception("Pipeline falhou para analysis_id=%d", analysis_record.id)
         analysis_record.status = "error"
         analysis_record.error_message = "Falha na execucao do pipeline. Consulte os logs do servidor."
         await session.commit()
-        raise HTTPException(500, "Falha no pipeline de análise. Consulte os logs do backend.")
+        raise HTTPException(500, "Falha no pipeline de analise. Consulte os logs do backend.")
 
 
 @router.get("/analysis", response_model=list[AnalysisListItem])
 async def list_analyses(session: AsyncSession = Depends(get_session)):
-    """List all past analyses (most recent first)."""
+    """Executa o metodo list_analyses."""
+    # Lista do mais recente para o mais antigo para melhorar UX.
     result = await session.execute(select(Analysis).order_by(Analysis.created_at.desc()))
     rows = result.scalars().all()
-    items = []
+
+    # Mapeia entidade de banco para item enxuto de listagem.
+    items: list[AnalysisListItem] = []
     for row in rows:
+        # Deriva contagem de ameacas da estrutura STRIDE salva.
         threat_count = 0
         if row.stride_json and "threats" in row.stride_json:
             threat_count = len(row.stride_json["threats"])
+
         items.append(
             AnalysisListItem(
                 id=row.id,
@@ -133,12 +150,14 @@ async def list_analyses(session: AsyncSession = Depends(get_session)):
 
 @router.get("/analysis/{analysis_id}", response_model=AnalysisResponse)
 async def get_analysis(analysis_id: int, session: AsyncSession = Depends(get_session)):
-    """Get full details of a specific analysis."""
+    """Executa o metodo get_analysis."""
+    # Busca registro completo por id.
     result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
     row = result.scalar_one_or_none()
     if not row:
-        raise HTTPException(404, "Análise não encontrada")
+        raise HTTPException(404, "Analise nao encontrada")
 
+    # Reconstroi objetos tipados para resposta consistente da API.
     diagram = DiagramAnalysis.model_validate(row.diagram_json) if row.diagram_json else None
     stride_data = STRIDEReport.model_validate(row.stride_json) if row.stride_json else None
 
@@ -157,17 +176,21 @@ async def get_analysis(analysis_id: int, session: AsyncSession = Depends(get_ses
 
 @router.get("/analysis/{analysis_id}/pdf")
 async def download_pdf(analysis_id: int, session: AsyncSession = Depends(get_session)):
-    """Download the STRIDE analysis as a formatted PDF."""
+    """Executa o metodo download_pdf."""
+    # Busca analise para montar relatorio.
     result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
     row = result.scalar_one_or_none()
     if not row:
-        raise HTTPException(404, "Análise não encontrada")
+        raise HTTPException(404, "Analise nao encontrada")
+    # Garante que apenas analises concluidas possam gerar PDF.
     if row.status != "done":
-        raise HTTPException(400, "A análise ainda não foi concluída")
+        raise HTTPException(400, "A analise ainda nao foi concluida")
 
+    # Reconstrucao dos objetos usados pelo gerador de relatorio.
     diagram = DiagramAnalysis.model_validate(row.diagram_json)
     stride_data = STRIDEReport.model_validate(row.stride_json)
 
+    # Gera bytes do PDF com imagem, contexto e listagens STRIDE.
     pdf_bytes = report.generate_pdf(
         diagram,
         stride_data,
@@ -184,16 +207,19 @@ async def download_pdf(analysis_id: int, session: AsyncSession = Depends(get_ses
 
 @router.get("/analysis/{analysis_id}/image")
 async def get_analysis_image(analysis_id: int, session: AsyncSession = Depends(get_session)):
-    """Return the original uploaded image for a specific analysis."""
+    """Executa o metodo get_analysis_image."""
+    # Busca caminho da imagem original da analise.
     result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
     row = result.scalar_one_or_none()
     if not row:
-        raise HTTPException(404, "Análise não encontrada")
+        raise HTTPException(404, "Analise nao encontrada")
 
+    # Valida existencia fisica do arquivo no disco.
     image_path = Path(row.image_path)
     if not image_path.exists():
-        raise HTTPException(404, "Imagem da análise não encontrada")
+        raise HTTPException(404, "Imagem da analise nao encontrada")
 
+    # Resolve MIME para retorno apropriado ao cliente.
     media_type, _ = mimetypes.guess_type(image_path.name)
     return FileResponse(
         path=str(image_path),
@@ -204,17 +230,21 @@ async def get_analysis_image(analysis_id: int, session: AsyncSession = Depends(g
 
 @router.delete("/analysis/{analysis_id}", status_code=204)
 async def delete_analysis(analysis_id: int, session: AsyncSession = Depends(get_session)):
-    """Delete a saved analysis and its uploaded image."""
+    """Executa o metodo delete_analysis."""
+    # Busca registro a ser removido.
     result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
     row = result.scalar_one_or_none()
     if not row:
-        raise HTTPException(404, "Análise não encontrada")
+        raise HTTPException(404, "Analise nao encontrada")
 
+    # Calcula caminhos dos arquivos associados ao registro.
     original_path = Path(row.image_path)
     normalized_path = original_path.with_suffix(".normalized.png")
 
+    # Remove primeiro do banco para manter consistencia transacional.
     await session.delete(row)
     await session.commit()
 
+    # Remove arquivos de disco apos commit.
     _delete_file_if_exists(original_path)
     _delete_file_if_exists(normalized_path)

@@ -1,4 +1,6 @@
-﻿import type { STRIDEReport, DiagramAnalysis } from '../services/api'
+/** Apresenta saida da analise STRIDE e acoes do usuario na interface web. */
+
+import type { STRIDEReport, DiagramAnalysis } from '../services/api'
 
 interface ResultsViewProps {
   diagram: DiagramAnalysis;
@@ -13,6 +15,7 @@ interface ResultsViewProps {
   onSpeakBottom: () => void;
 }
 
+/** Executa a funcao VoiceIconButton. */
 function VoiceIconButton({
   onClick,
   title,
@@ -57,6 +60,7 @@ function VoiceIconButton({
   );
 }
 
+/** Executa a funcao ResultsView. */
 export default function ResultsView({
   diagram,
   stride,

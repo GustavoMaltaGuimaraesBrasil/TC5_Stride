@@ -1,23 +1,25 @@
-"""Pydantic schemas for API request/response validation."""
+﻿"""Schemas Pydantic para validacao de entrada e saida da API."""
 
 from __future__ import annotations
+
 from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
-# ── Stage 1: Diagram extraction (Vision) ─────────────────────────
+# Etapa 1: extracao do diagrama (Vision)
 
 class Component(BaseModel):
-    id: str = Field(..., description="Unique component id, e.g. 'c1'")
-    name: str = Field(..., description="Human-readable name, e.g. 'API Gateway'")
-    type: str = Field(..., description="Component type, e.g. 'api_gateway', 'database'")
-    group: str | None = Field(None, description="Group/boundary this component belongs to")
+    id: str = Field(..., description="Identificador unico do componente (ex.: c1).")
+    name: str = Field(..., description="Nome legivel do componente (ex.: API Gateway).")
+    type: str = Field(..., description="Tipo do componente (ex.: api_gateway, database).")
+    group: str | None = Field(None, description="Grupo/fronteira ao qual o componente pertence.")
 
 
 class Group(BaseModel):
     id: str
     name: str
-    type: str = Field("trust_boundary", description="e.g. trust_boundary, vpc, subnet")
+    type: str = Field("trust_boundary", description="Tipo do grupo (ex.: trust_boundary, vpc, subnet).")
     component_ids: list[str] = []
 
 
@@ -30,26 +32,32 @@ class Flow(BaseModel):
 
 
 class DiagramAnalysis(BaseModel):
-    """Output of Stage 1 (Vision)."""
+    """Saida da Etapa 1 (Vision)."""
     context_summary: str = ""
     components: list[Component] = []
     groups: list[Group] = []
     flows: list[Flow] = []
 
 
-# ── Stage 2: STRIDE report ───────────────────────────────────────
+# Etapa 2: relatorio STRIDE
 
 class Threat(BaseModel):
     id: str
-    stride_category: str = Field(..., description="One of: Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege")
+    stride_category: str = Field(
+        ...,
+        description=(
+            "Categoria STRIDE: Spoofing, Tampering, Repudiation, "
+            "Information Disclosure, Denial of Service, Elevation of Privilege."
+        ),
+    )
     target_id: str
     target_name: str
     description: str
-    severity: str = Field(..., description="critical, high, medium, low")
+    severity: str = Field(..., description="Severidade: critical, high, medium, low.")
     mitigation: str
-    affected_flows: list[str] = Field(default_factory=list, description="Flow descriptions, e.g. 'c1 -> c2'")
-    evidence: list[str] = Field(default_factory=list, description="Observed evidence from diagram/flow/boundary used to justify threat.")
-    reference_ids: list[str] = Field(default_factory=list, description="Knowledge references used in the mitigation rationale.")
+    affected_flows: list[str] = Field(default_factory=list, description="Fluxos afetados (ex.: c1 -> c2).")
+    evidence: list[str] = Field(default_factory=list, description="Evidencias usadas para justificar a ameaca.")
+    reference_ids: list[str] = Field(default_factory=list, description="Referencias de conhecimento usadas na mitigacao.")
 
 
 class ThreatSummary(BaseModel):
@@ -61,13 +69,13 @@ class ThreatSummary(BaseModel):
 
 
 class STRIDEReport(BaseModel):
-    """Output of Stage 2 (STRIDE)."""
+    """Saida da Etapa 2 (STRIDE)."""
     summary: ThreatSummary = Field(default_factory=ThreatSummary)
     threats: list[Threat] = []
     recommendations: list[str] = []
 
 
-# ── API response schemas ─────────────────────────────────────────
+# Respostas da API
 
 class AnalysisResponse(BaseModel):
     id: int

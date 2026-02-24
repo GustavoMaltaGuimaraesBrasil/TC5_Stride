@@ -54,7 +54,7 @@ run_mobile_qr() {
   echo "Para iPhone: usar Camera para ler o QR (ou app Expo Go)."
   cd "$ROOT_DIR/frontend/mobile"
   npm install --include=dev --no-audit
-  npx expo start
+  npx expo start --host lan -c
 }
 
 run_test() {

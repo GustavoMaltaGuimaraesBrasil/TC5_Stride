@@ -1,3 +1,5 @@
+/** Contratos compartilhados de analise usados por web e mobile. */
+
 export interface AnalysisResponse {
   id: number;
   image_filename: string;

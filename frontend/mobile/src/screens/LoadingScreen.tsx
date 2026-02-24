@@ -1,3 +1,5 @@
+/** Tela de carregamento exibida durante a analise. */
+
 import React from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { colors } from '../theme/colors';
@@ -7,6 +9,7 @@ interface Props {
   stage?: string;
 }
 
+/** Executa a funcao LoadingScreen. */
 export default function LoadingScreen({ filename, stage }: Props) {
   return (
     <View style={styles.container}>

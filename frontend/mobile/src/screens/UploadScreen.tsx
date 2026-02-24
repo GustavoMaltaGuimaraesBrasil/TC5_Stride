@@ -1,4 +1,6 @@
-﻿import React from 'react';
+/** Tela de upload para selecionar/fotografar imagens e abrir analises salvas. */
+
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { colors } from '../theme/colors';
@@ -14,6 +16,7 @@ interface Props {
   disabled?: boolean;
 }
 
+/** Executa a funcao buildUploadMeta. */
 function buildUploadMeta(
   asset: ImagePicker.ImagePickerAsset,
   fallbackBaseName: string,
@@ -39,6 +42,7 @@ function buildUploadMeta(
   return { filename: ext ? `${providedName}${ext}` : providedName, mimeType };
 }
 
+/** Executa a funcao UploadScreen. */
 export default function UploadScreen({
   onImageSelected,
   analyses,
@@ -48,6 +52,7 @@ export default function UploadScreen({
   onRefreshHistory,
   disabled,
 }: Props) {
+  /** Executa a funcao pickImage. */
   const pickImage = async () => {
     if (disabled) return;
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -63,6 +68,7 @@ export default function UploadScreen({
     }
   };
 
+  /** Executa a funcao takePhoto. */
   const takePhoto = async () => {
     if (disabled) return;
     const permission = await ImagePicker.requestCameraPermissionsAsync();

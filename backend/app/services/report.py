@@ -1,4 +1,4 @@
-﻿"""Report Service - Generate PDF reports from STRIDE analysis results."""
+﻿"""Servico de relatorio: gera PDF com resultados STRIDE."""
 
 import io
 import logging
@@ -9,15 +9,8 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
-from reportlab.platypus import (
-    Image as RLImage,
-    PageBreak,
-    Paragraph,
-    SimpleDocTemplate,
-    Spacer,
-    Table,
-    TableStyle,
-)
+from reportlab.platypus import Image as RLImage
+from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from app.models.schemas import DiagramAnalysis, STRIDEReport
 
@@ -31,23 +24,24 @@ _SEVERITY_COLORS = {
 }
 
 _SEVERITY_LABEL_PT = {
-    "critical": "CRÍTICO",
+    "critical": "CRITICO",
     "high": "ALTO",
-    "medium": "MÉDIO",
+    "medium": "MEDIO",
     "low": "BAIXO",
 }
 
 _STRIDE_LABEL_PT = {
-    "Spoofing": "Falsificação de Identidade",
-    "Tampering": "Violação de Integridade",
-    "Repudiation": "Repúdio",
-    "Information Disclosure": "Divulgação de Informação",
-    "Denial of Service": "Negação de Serviço",
-    "Elevation of Privilege": "Elevação de Privilégio",
+    "Spoofing": "Falsificacao de Identidade",
+    "Tampering": "Violacao de Integridade",
+    "Repudiation": "Repudio",
+    "Information Disclosure": "Divulgacao de Informacao",
+    "Denial of Service": "Negacao de Servico",
+    "Elevation of Privilege": "Elevacao de Privilegio",
 }
 
 
 def _build_uploaded_image_flowables(image_path: str, styles, max_width: float) -> list:
+    """Executa o metodo _build_uploaded_image_flowables."""
     flowables: list = []
     try:
         with PILImage.open(image_path) as src:
@@ -67,7 +61,7 @@ def _build_uploaded_image_flowables(image_path: str, styles, max_width: float) -
 
             flowables.append(Paragraph("Diagrama Enviado", styles["Heading2"]))
             img_flow = RLImage(img_buffer, width=draw_w, height=draw_h)
-            # Prevent buffer from being GC'ed before reportlab consumes it.
+            # Evita que o buffer seja coletado antes do ReportLab consumir a imagem.
             img_flow._img_buffer = img_buffer
             flowables.append(img_flow)
             flowables.append(Spacer(1, 8 * mm))
@@ -83,7 +77,7 @@ def generate_pdf(
     image_filename: str,
     image_path: str | None = None,
 ) -> bytes:
-    """Gera um relatório PDF e retorna como bytes."""
+    """Executa o metodo generate_pdf."""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -105,8 +99,8 @@ def generate_pdf(
 
     elements = []
 
-    # Titulo
-    elements.append(Paragraph("Relatório de Análise de Ameaças STRIDE", styles["Title"]))
+    # Cabecalho principal do relatorio.
+    elements.append(Paragraph("Relatorio de Analise de Ameacas STRIDE", styles["Title"]))
     elements.append(Spacer(1, 4 * mm))
     elements.append(
         Paragraph(
@@ -117,20 +111,20 @@ def generate_pdf(
     )
     elements.append(Spacer(1, 8 * mm))
 
-    # Imagem enviada
+    # Imagem original enviada pelo usuario.
     if image_path:
         elements.extend(_build_uploaded_image_flowables(image_path, styles, doc.width))
 
-    # Contexto antes das listagens
+    # Contexto da infraestrutura antes das listagens de ameacas.
     if diagram.context_summary:
         elements.append(Paragraph("Contexto da Infraestrutura", styles["Heading2"]))
         elements.append(Paragraph(diagram.context_summary, styles["Normal"]))
         elements.append(Spacer(1, 6 * mm))
 
-    # Tabela de resumo
+    # Resumo executivo com contagem por severidade.
     elements.append(Paragraph("Resumo Executivo", styles["Heading2"]))
     summary_data = [
-        ["Total de Ameaças", "Crítico", "Alto", "Médio", "Baixo"],
+        ["Total de Ameacas", "Critico", "Alto", "Medio", "Baixo"],
         [
             str(report.summary.total_threats),
             str(report.summary.critical),
@@ -156,8 +150,8 @@ def generate_pdf(
     elements.append(summary_table)
     elements.append(Spacer(1, 8 * mm))
 
-    # Visão geral da arquitetura
-    elements.append(Paragraph("Visão Geral da Arquitetura", styles["Heading2"]))
+    # Visao geral da arquitetura extraida.
+    elements.append(Paragraph("Visao Geral da Arquitetura", styles["Heading2"]))
     elements.append(
         Paragraph(
             f"Componentes: {len(diagram.components)} &nbsp;|&nbsp; "
@@ -181,20 +175,15 @@ def generate_pdf(
                     ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
                     ("FONTSIZE", (0, 0), (-1, -1), 8),
                     ("GRID", (0, 0), (-1, -1), 0.5, colors.lightgrey),
-                    (
-                        "ROWBACKGROUNDS",
-                        (0, 1),
-                        (-1, -1),
-                        [colors.white, colors.HexColor("#F8FAFC")],
-                    ),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
                 ]
             )
         )
         elements.append(comp_table)
     elements.append(Spacer(1, 8 * mm))
 
-    # Ameaças
-    elements.append(Paragraph("Detalhes das Ameaças", styles["Heading2"]))
+    # Bloco principal de ameacas.
+    elements.append(Paragraph("Detalhes das Ameacas", styles["Heading2"]))
     elements.append(Spacer(1, 4 * mm))
 
     for threat in report.threats:
@@ -208,35 +197,20 @@ def generate_pdf(
                 styles["ThreatTitle"],
             )
         )
-        elements.append(Paragraph(f"<b>Descrição:</b> {threat.description}", styles["Normal"]))
-        elements.append(Paragraph(f"<b>Mitigação:</b> {threat.mitigation}", styles["Normal"]))
+        elements.append(Paragraph(f"<b>Descricao:</b> {threat.description}", styles["Normal"]))
+        elements.append(Paragraph(f"<b>Mitigacao:</b> {threat.mitigation}", styles["Normal"]))
         if threat.affected_flows:
-            elements.append(
-                Paragraph(
-                    f"<b>Fluxos afetados:</b> {', '.join(threat.affected_flows)}",
-                    styles["Normal"],
-                )
-            )
+            elements.append(Paragraph(f"<b>Fluxos afetados:</b> {', '.join(threat.affected_flows)}", styles["Normal"]))
         if threat.evidence:
-            elements.append(
-                Paragraph(
-                    f"<b>Evidências:</b> {'; '.join(threat.evidence)}",
-                    styles["Normal"],
-                )
-            )
+            elements.append(Paragraph(f"<b>Evidencias:</b> {'; '.join(threat.evidence)}", styles["Normal"]))
         if threat.reference_ids:
-            elements.append(
-                Paragraph(
-                    f"<b>Referências:</b> {', '.join(threat.reference_ids)}",
-                    styles["Normal"],
-                )
-            )
+            elements.append(Paragraph(f"<b>Referencias:</b> {', '.join(threat.reference_ids)}", styles["Normal"]))
         elements.append(Spacer(1, 4 * mm))
 
-    # Recomendações
+    # Recomendações finais em nova pagina quando existirem.
     if report.recommendations:
         elements.append(PageBreak())
-        elements.append(Paragraph("Recomendações", styles["Heading2"]))
+        elements.append(Paragraph("Recomendacoes", styles["Heading2"]))
         for i, rec in enumerate(report.recommendations, 1):
             elements.append(Paragraph(f"{i}. {rec}", styles["Normal"]))
             elements.append(Spacer(1, 2 * mm))

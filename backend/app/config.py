@@ -1,25 +1,26 @@
-"""Application configuration loaded from environment variables."""
+"""Configuracoes da aplicacao carregadas por variaveis de ambiente."""
+
+from pathlib import Path
 
 from pydantic_settings import BaseSettings
-from pathlib import Path
 
 
 class Settings(BaseSettings):
-    # OpenAI
+    # Configuracao da OpenAI.
     openai_api_key: str = ""
     openai_model: str = "gpt-4o"
 
-    # Database
+    # Configuracao do banco de dados.
     database_url: str = "sqlite+aiosqlite:///./stride.db"
 
-    # File storage
+    # Diretorio de armazenamento de arquivos enviados.
     upload_dir: str = "./uploads"
 
-    # CORS
+    # Lista de origens permitidas para CORS.
     cors_origins: list[str] = ["http://localhost:5173"]
 
-    # App
-    app_title: str = "STRIDE Modelador de Ameaças"
+    # Metadados da aplicacao.
+    app_title: str = "STRIDE Modelador de Amea\u00e7as"
     app_version: str = "2.0.0"
     debug: bool = False
 
@@ -28,5 +29,5 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Ensure upload directory exists
+# Garante que o diretorio de upload exista ao iniciar a aplicacao.
 Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)

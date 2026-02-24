@@ -1,4 +1,4 @@
-"""Vision Service — Stage 1: Extract components, groups, and flows from a diagram image using OpenAI GPT-4o Vision."""
+"""Servico Vision - Estagio 1: extrai componentes, grupos e fluxos de uma imagem de diagrama com OpenAI GPT-4o Vision."""
 
 import base64
 import json
@@ -14,27 +14,24 @@ from app.models.schemas import DiagramAnalysis
 
 logger = logging.getLogger(__name__)
 
-# Load system prompt once at module level
+# Carrega o prompt de sistema uma vez no nivel de modulo.
 _PROMPT_DIR = Path(__file__).resolve().parent.parent / "prompts"
 _VISION_SYSTEM_PROMPT = (_PROMPT_DIR / "vision_system.md").read_text(encoding="utf-8")
 
 
 def _encode_image(image_path: str) -> str:
-    """Read an image file and return its base64 encoding."""
+    """Executa o metodo _encode_image."""
     with open(image_path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
 
 def _normalize_for_vision(image_path: str) -> tuple[str, str]:
-    """
-    Ensure image is in a format compatible with the Vision API payload.
-    Returns (path_to_send, media_type).
-    """
+    """Executa o metodo _normalize_for_vision."""
     ext = Path(image_path).suffix.lower()
     if ext in {".png", ".jpg", ".jpeg", ".gif", ".webp"}:
         return image_path, _detect_media_type(image_path)
 
-    # Convert uncommon formats (e.g. BMP) to PNG alongside the original file.
+    # Converte formatos menos comuns (ex.: BMP) para PNG ao lado do arquivo original.
     normalized_path = str(Path(image_path).with_suffix(".normalized.png"))
     with Image.open(image_path) as img:
         img.convert("RGB").save(normalized_path, format="PNG")
@@ -42,7 +39,7 @@ def _normalize_for_vision(image_path: str) -> tuple[str, str]:
 
 
 def _detect_media_type(image_path: str) -> str:
-    """Return the MIME type based on file extension."""
+    """Executa o metodo _detect_media_type."""
     ext = Path(image_path).suffix.lower()
     return {
         ".png": "image/png",
@@ -54,60 +51,57 @@ def _detect_media_type(image_path: str) -> str:
 
 
 async def extract_diagram(image_path: str) -> DiagramAnalysis:
-    """
-    Send an architecture diagram image to GPT-4o Vision and get back
-    structured JSON with components, groups, and flows.
-    """
-    client = AsyncOpenAI(
-        api_key=settings.openai_api_key,
-        http_client=httpx.AsyncClient(trust_env=False),
-    )
-
+    """Executa o metodo extract_diagram."""
     send_path, media_type = _normalize_for_vision(image_path)
     image_b64 = _encode_image(send_path)
 
-    logger.info("Sending image to OpenAI Vision: %s", send_path)
+    logger.info("Enviando imagem para OpenAI Vision: %s", send_path)
 
-    response = await client.chat.completions.create(
-        model=settings.openai_model,
-        messages=[
-            {
-                "role": "system",
-                "content": _VISION_SYSTEM_PROMPT,
-            },
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": (
-                            "Analise este diagrama de arquitetura e extraia todos os componentes, "
-                            "grupos/fronteiras e fluxos/conexoes. Retorne SOMENTE JSON. "
-                            "Escreva o campo context_summary em portugues (pt-BR)."
-                        ),
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:{media_type};base64,{image_b64}",
-                            "detail": "high",
+    async with httpx.AsyncClient(trust_env=False) as http_client:
+        client = AsyncOpenAI(
+            api_key=settings.openai_api_key,
+            http_client=http_client,
+        )
+        response = await client.chat.completions.create(
+            model=settings.openai_model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": _VISION_SYSTEM_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": (
+                                "Analise este diagrama de arquitetura e extraia todos os componentes, "
+                                "grupos/fronteiras e fluxos/conexoes. Retorne SOMENTE JSON. "
+                                "Escreva o campo context_summary em portugues (pt-BR)."
+                            ),
                         },
-                    },
-                ],
-            },
-        ],
-        temperature=0.1,
-        max_tokens=4096,
-        response_format={"type": "json_object"},
-    )
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:{media_type};base64,{image_b64}",
+                                "detail": "high",
+                            },
+                        },
+                    ],
+                },
+            ],
+            temperature=0.1,
+            max_tokens=4096,
+            response_format={"type": "json_object"},
+        )
 
     raw = response.choices[0].message.content
-    logger.info("Vision raw response length: %d chars", len(raw))
+    logger.info("Tamanho bruto da resposta Vision: %d caracteres", len(raw))
 
     data = json.loads(raw)
     result = DiagramAnalysis.model_validate(data)
     logger.info(
-        "Extracted %d components, %d groups, %d flows",
+        "Extraidos %d componentes, %d grupos, %d fluxos",
         len(result.components),
         len(result.groups),
         len(result.flows),

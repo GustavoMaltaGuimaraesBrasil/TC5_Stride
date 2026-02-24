@@ -1,4 +1,4 @@
-"""Voice service: OpenAI TTS + transcription (pt-BR)."""
+"""Servico de voz: TTS e transcricao com OpenAI (pt-BR)."""
 
 from __future__ import annotations
 
@@ -28,12 +28,14 @@ TRANSCRIBE_PROMPT = (
 
 
 def _auth_headers() -> dict[str, str]:
+    """Executa o metodo _auth_headers."""
     if not settings.openai_api_key:
         raise HTTPException(500, "OPENAI_API_KEY nao configurada no backend.")
     return {"Authorization": f"Bearer {settings.openai_api_key}"}
 
 
 async def synthesize_speech(text: str) -> str:
+    """Executa o metodo synthesize_speech."""
     payload = {
         "model": TTS_MODEL,
         "voice": TTS_VOICE,
@@ -55,6 +57,7 @@ async def synthesize_speech(text: str) -> str:
 
 
 def _can_fallback_transcription(status_code: int, body: str) -> bool:
+    """Executa o metodo _can_fallback_transcription."""
     if status_code in {429, 500, 502, 503, 504}:
         return True
     lower = body.lower()
@@ -71,6 +74,7 @@ def _can_fallback_transcription(status_code: int, body: str) -> bool:
 
 
 async def transcribe_audio(audio_bytes: bytes, filename: str, content_type: str | None) -> tuple[str, str]:
+    """Executa o metodo transcribe_audio."""
     content_type = content_type or "application/octet-stream"
     model_candidates = [TRANSCRIBE_PRIMARY, TRANSCRIBE_FALLBACK]
 

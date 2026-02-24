@@ -1,3 +1,5 @@
+/** Paleta de cores mobile compartilhada da interface FIAP Software Security. */
+
 export const colors = {
   bg: '#101014',
   surface: '#181821',

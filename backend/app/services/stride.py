@@ -1,4 +1,4 @@
-"""STRIDE Service — Stage 2: Generate STRIDE threat analysis from structured diagram data."""
+﻿"""Servico STRIDE - Estagio 2: gera analise STRIDE a partir dos dados estruturados do diagrama."""
 
 import json
 import logging
@@ -18,65 +18,74 @@ _STRIDE_SYSTEM_PROMPT = (_PROMPT_DIR / "stride_system.md").read_text(encoding="u
 
 
 async def analyze_stride(diagram: DiagramAnalysis) -> STRIDEReport:
-    """
-    Receive the structured diagram JSON (Stage 1 output) and produce
-    a STRIDE threat report using a second LLM call + deterministic rules.
-    """
-    client = AsyncOpenAI(
-        api_key=settings.openai_api_key,
-        http_client=httpx.AsyncClient(trust_env=False),
-    )
-
+    """Executa o metodo analyze_stride."""
+    # Serializa diagrama para injetar no prompt de forma estruturada.
     diagram_json = diagram.model_dump_json(indent=2)
+    # Resume tipos de componentes para melhorar consulta ao contexto RAG.
     component_types = ", ".join(sorted({c.type for c in diagram.components})) or "unknown"
+    # Monta query textual simples para recuperar trechos relevantes da base local.
     rag_query = (
         f"components={len(diagram.components)} types={component_types} "
         f"flows={len(diagram.flows)} groups={len(diagram.groups)} "
         f"focus=stride threats mitigations trust boundary crossing"
     )
+    # Recupera e formata contexto adicional para justificar referencias.
     rag_chunks = rag.retrieve_stride_context(rag_query, top_k=5)
     rag_context = rag.format_context_for_prompt(rag_chunks)
 
     logger.info(
-        "Sending diagram to STRIDE analysis (%d components, %d flows)",
+        "Enviando diagrama para analise STRIDE (%d componentes, %d fluxos)",
         len(diagram.components),
         len(diagram.flows),
     )
 
-    response = await client.chat.completions.create(
-        model=settings.openai_model,
-        messages=[
-            {
-                "role": "system",
-                "content": _STRIDE_SYSTEM_PROMPT,
-            },
-            {
-                "role": "user",
-                "content": (
-                    "Analise a arquitetura abaixo para ameacas STRIDE. "
-                    "Responda os campos textuais em portugues (pt-BR) e foque nos fluxos "
-                    "que cruzam fronteiras de confianca.\n\n"
-                    "RAG CONTEXT (use these ids in reference_ids):\n"
-                    f"{rag_context}\n\n"
-                    "ARCHITECTURE JSON:\n"
-                    f"```json\n{diagram_json}\n```"
-                ),
-            },
-        ],
-        temperature=0.2,
-        max_tokens=8192,
-        response_format={"type": "json_object"},
-    )
+    # Cliente HTTP dedicado desta chamada para evitar conexoes penduradas.
+    async with httpx.AsyncClient(trust_env=False) as http_client:
+        # Cliente OpenAI assincorno com chave do ambiente.
+        client = AsyncOpenAI(
+            api_key=settings.openai_api_key,
+            http_client=http_client,
+        )
+        # Chamada principal da LLM para gerar relatorio STRIDE em JSON.
+        response = await client.chat.completions.create(
+            model=settings.openai_model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": _STRIDE_SYSTEM_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": (
+                        "Analise a arquitetura abaixo para ameacas STRIDE. "
+                        "Responda os campos textuais em portugues (pt-BR) e foque nos fluxos "
+                        "que cruzam fronteiras de confianca.\n\n"
+                        "RAG CONTEXT (use these ids in reference_ids):\n"
+                        f"{rag_context}\n\n"
+                        "ARCHITECTURE JSON:\n"
+                        f"```json\n{diagram_json}\n```"
+                    ),
+                },
+            ],
+            temperature=0.2,
+            max_tokens=8192,
+            response_format={"type": "json_object"},
+        )
 
+    # Conteudo bruto retornado pela LLM.
     raw = response.choices[0].message.content
     logger.info("STRIDE raw response length: %d chars", len(raw))
 
+    # Parse para dicionario e validacao pelo schema tipado.
     data = json.loads(raw)
     report = STRIDEReport.model_validate(data)
 
+    # Garante campos de rastreabilidade mesmo quando a LLM omitir dados.
     for t in report.threats:
+        # Injeta referencias padrao quando nao houver citacoes.
         if not t.reference_ids:
             t.reference_ids = rag.default_reference_ids()
+        # Injeta evidencias minimas para manter explicabilidade.
         if not t.evidence:
             ev: list[str] = []
             if t.target_name:
@@ -87,14 +96,14 @@ async def analyze_stride(diagram: DiagramAnalysis) -> STRIDEReport:
                 ev.append("Derivado do papel do componente na arquitetura e do mapeamento STRIDE.")
             t.evidence = ev
 
-    # Deterministic enrichment: ensure summary counts match actual threats
+    # Enriquecimento deterministico: garante que o resumo reflita as ameacas geradas.
     report.summary.total_threats = len(report.threats)
     report.summary.critical = sum(1 for t in report.threats if t.severity == "critical")
     report.summary.high = sum(1 for t in report.threats if t.severity == "high")
     report.summary.medium = sum(1 for t in report.threats if t.severity == "medium")
     report.summary.low = sum(1 for t in report.threats if t.severity == "low")
 
-    # Deterministic fallback: add baseline threats if LLM missed STRIDE categories
+    # Fallback deterministico: adiciona cobertura basica se alguma categoria STRIDE faltar.
     _ensure_baseline_coverage(diagram, report)
 
     logger.info(
@@ -109,12 +118,11 @@ async def analyze_stride(diagram: DiagramAnalysis) -> STRIDEReport:
 
 
 def _ensure_baseline_coverage(diagram: DiagramAnalysis, report: STRIDEReport):
-    """
-    Deterministic rules: if the LLM missed entire STRIDE categories,
-    add generic baseline threats based on component types.
-    """
+    """Executa o metodo _ensure_baseline_coverage."""
+    # Coleta categorias ja existentes para descobrir lacunas.
     categories_found = {t.stride_category for t in report.threats}
 
+    # Regras basicas para cobertura minima por categoria STRIDE.
     baseline_rules = {
         "Spoofing": {
             "types": ["user", "client", "auth", "external", "api_gateway"],
@@ -148,13 +156,16 @@ def _ensure_baseline_coverage(diagram: DiagramAnalysis, report: STRIDEReport):
         },
     }
 
+    # Continua ids de ameaças a partir da ultima posicao.
     next_id = len(report.threats) + 1
+    # Verifica categoria por categoria se precisa complementar.
     for category, rule in baseline_rules.items():
         if category in categories_found:
             continue
-        # Find first matching component
+        # Busca o primeiro componente compativel com a regra.
         for comp in diagram.components:
             if comp.type in rule["types"]:
+                # Adiciona ameaça sintetica de cobertura basica.
                 report.threats.append(
                     Threat(
                         id=f"t{next_id}",
@@ -172,9 +183,10 @@ def _ensure_baseline_coverage(diagram: DiagramAnalysis, report: STRIDEReport):
                 next_id += 1
                 break
 
-    # Recalculate summary
+    # Recalcula o resumo apos complementar ameacas basicas.
     report.summary.total_threats = len(report.threats)
     report.summary.critical = sum(1 for t in report.threats if t.severity == "critical")
     report.summary.high = sum(1 for t in report.threats if t.severity == "high")
     report.summary.medium = sum(1 for t in report.threats if t.severity == "medium")
     report.summary.low = sum(1 for t in report.threats if t.severity == "low")
+
