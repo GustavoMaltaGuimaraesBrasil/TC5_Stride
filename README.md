@@ -1,25 +1,25 @@
-# FIAP Software Security - STRIDE Modelador de Ameaças (LLM-first)
+﻿# FIAP Software Security - STRIDE Modelador de AmeaÃ§as (LLM-first)
 
-MVP para modelagem automatizada de ameaças STRIDE a partir de diagramas de arquitetura.
+MVP para modelagem automatizada de ameaÃ§as STRIDE a partir de diagramas de arquitetura.
 
-## O que é STRIDE
-STRIDE é um modelo de ameaças da Microsoft usado para identificar riscos de segurança em arquiteturas de software.
+## O que Ã© STRIDE
+STRIDE Ã© um modelo de ameaÃ§as da Microsoft usado para identificar riscos de seguranÃ§a em arquiteturas de software.
 Ele organiza riscos em seis categorias:
-- `S` Spoofing (falsificação de identidade)
-- `T` Tampering (violação de integridade)
-- `R` Repudiation (repúdio)
-- `I` Information Disclosure (divulgação de informação)
-- `D` Denial of Service (negação de serviço)
-- `E` Elevation of Privilege (elevação de privilégio)
+- `S` Spoofing (falsificaÃ§Ã£o de identidade)
+- `T` Tampering (violaÃ§Ã£o de integridade)
+- `R` Repudiation (repÃºdio)
+- `I` Information Disclosure (divulgaÃ§Ã£o de informaÃ§Ã£o)
+- `D` Denial of Service (negaÃ§Ã£o de serviÃ§o)
+- `E` Elevation of Privilege (elevaÃ§Ã£o de privilÃ©gio)
 
-## Visão geral
+## VisÃ£o geral
 - Entrada: imagem de diagrama (`PNG`, `JPG`, `JPEG`, `GIF`, `WEBP`, `BMP`).
-- Estágio 1 (Vision): GPT-4o extrai `context_summary`, componentes, grupos e fluxos em JSON.
-- Estágio 2 (STRIDE): GPT-4o + RAG local + regras determinísticas gera ameaças e mitigações.
-- Voz (TTS): backend sintetiza narração em pt-BR e web/mobile pré-carregam 3 áudios ao abrir o resultado.
-- Saída: resposta JSON, persistência em SQLite e relatório PDF.
-- Idioma: resultados para o usuário final em português (pt-BR).
-- Evolução em andamento: adoção gradual de LangChain para orquestração, RAG e observabilidade.
+- EstÃ¡gio 1 (Vision): GPT-4o extrai `context_summary`, componentes, grupos e fluxos em JSON.
+- EstÃ¡gio 2 (STRIDE): GPT-4o + RAG local + regras determinÃ­sticas gera ameaÃ§as e mitigaÃ§Ãµes.
+- Voz (TTS): backend sintetiza narraÃ§Ã£o em pt-BR e web/mobile prÃ©-carregam 3 Ã¡udios ao abrir o resultado.
+- SaÃ­da: resposta JSON, persistÃªncia em SQLite e relatÃ³rio PDF.
+- Idioma: resultados para o usuÃ¡rio final em portuguÃªs (pt-BR).
+- EvoluÃ§Ã£o em andamento: adoÃ§Ã£o gradual de LangChain para orquestraÃ§Ã£o, RAG e observabilidade.
 
 ## Stack
 - Backend: FastAPI + SQLAlchemy async + SQLite
@@ -30,11 +30,11 @@ Ele organiza riscos em seis categorias:
 - Dependencias JS: `frontend/web/package.json` e `frontend/mobile/package.json`
 
 ## Estrutura
-- `backend/`: API, modelos, serviços e prompts
+- `backend/`: API, modelos, serviÃ§os e prompts
 - `frontend/web/`: interface web
 - `frontend/mobile/`: app mobile
-- `docs/GUIA.md`: guia operacional único
-- `teste/`: imagens de validação, script de teste e relatórios
+- `docs/GUIA.md`: guia operacional Ãºnico
+- `teste/`: imagens de validaÃ§Ã£o, script de teste e relatÃ³rios
 
 ## Preparar ambiente (Python + .env)
 O arquivo `requirements.txt` deste projeto e exclusivo do backend (`backend/requirements.txt`).
@@ -44,13 +44,13 @@ cd backend
 # criar ambiente virtual local
 python -m venv .venv
 
-# ativar ambiente virtual (uso automático no terminal atual)
+# ativar ambiente virtual (uso automÃ¡tico no terminal atual)
 # Linux/macOS:
 source .venv/bin/activate
 # Windows (PowerShell):
 .venv\Scripts\Activate.ps1
 
-# instalar dependências Python
+# instalar dependÃªncias Python
 python -m pip install --upgrade pip
 # este requirements e apenas do backend
 pip install -r requirements.txt
@@ -64,19 +64,19 @@ Copy-Item .env.example .env
 
 ## Executar localmente
 
-Você pode iniciar o projeto de duas formas:
+VocÃª pode iniciar o projeto de duas formas:
 - Script automatizado:
   - Windows: `run.bat`
   - macOS/Linux: `runmac.sh`
-- Execução manual por componente (backend, web e mobile), conforme seções abaixo.
+- ExecuÃ§Ã£o manual por componente (backend, web e mobile), conforme seÃ§Ãµes abaixo.
 
-Com os scripts (`run.bat` ou `runmac.sh`) você pode:
+Com os scripts (`run.bat` ou `runmac.sh`) vocÃª pode:
 1. Subir web
 2. Subir mobile com QR Code (mesma rede local)
-4. Executar teste automático
+4. Executar teste automÃ¡tico
 
-No app mobile, além de selecionar imagem da galeria, o usuário também pode tirar foto para enviar o diagrama.
-O usuário não grava áudio: a voz é gerada automaticamente pelo sistema para ler contexto, criticidade e mitigações.
+No app mobile, alÃ©m de selecionar imagem da galeria, o usuÃ¡rio tambÃ©m pode tirar foto para enviar o diagrama.
+O usuÃ¡rio nÃ£o grava Ã¡udio: a voz Ã© gerada automaticamente pelo sistema para ler contexto, criticidade e mitigaÃ§Ãµes.
 
 ### Uso dos scripts
 Windows:
@@ -112,76 +112,85 @@ cd frontend/mobile
 npm install
 npx expo start
 ```
-Observação para celular físico: o telefone deve estar na mesma rede Wi-Fi do computador.
+ObservaÃ§Ã£o para celular fÃ­sico: o telefone deve estar na mesma rede Wi-Fi do computador.
 
-### 4) Menu rápido no Windows
+### 4) Menu rÃ¡pido no Windows
 ```bat
 run.bat
 ```
-Opções do menu:
+OpÃ§Ãµes do menu:
 1. Subir web (sempre sobe backend antes)
 2. Subir mobile com QR Code (rede local, sempre sobe backend antes)
-4. Executar teste automático da pasta `teste` (sempre sobe backend antes)
+4. Executar teste automÃ¡tico da pasta `teste` (sempre sobe backend antes)
 
 ## API principal
-- `POST /api/analysis`: upload e análise completa
+- `POST /api/analysis`: upload e anÃ¡lise completa
 - `GET /api/analysis`: lista processamentos salvos
 - `GET /api/analysis/{id}`: detalhes do processamento salvo
 - `GET /api/analysis/{id}/image`: imagem original enviada
-- `GET /api/analysis/{id}/pdf`: download do relatório
-- `POST /api/audio/speech`: sintetiza texto em áudio (mp3 base64) para leitura da análise em pt-BR
-- `POST /api/audio/transcribe`: endpoint backend de transcrição (não exposto na UI do usuário final)
+- `GET /api/analysis/{id}/pdf`: download do relatÃ³rio
+- `POST /api/audio/speech`: sintetiza texto em Ã¡udio (mp3 base64) para leitura da anÃ¡lise em pt-BR
+- `POST /api/audio/transcribe`: endpoint backend de transcriÃ§Ã£o (nÃ£o exposto na UI do usuÃ¡rio final)
 - `GET /api/health`: health check
 
 ## Rastreabilidade STRIDE (RAG)
 Cada item em `threats[]` inclui:
-- `evidence`: evidências observadas no diagrama/fluxos/fronteiras.
-- `reference_ids`: ids das referências de segurança usadas na decisão (ex.: `STRIDE-001`).
+- `evidence`: evidÃªncias observadas no diagrama/fluxos/fronteiras.
+- `reference_ids`: ids das referÃªncias de seguranÃ§a usadas na decisÃ£o (ex.: `STRIDE-001`).
 
 Base local de conhecimento: `backend/app/knowledge/stride_rag.md`.
 
 ## Roadmap LangChain
-Fase 1 (documentação e desenho):
+Fase 1 (documentaÃ§Ã£o e desenho):
 1. Definir arquitetura alvo com chains separadas para Vision e STRIDE.
-2. Definir contratos de entrada/saída e estratégia de parser estruturado.
-3. Definir estratégia de RAG (chunking, retrieval e citação de fontes).
+2. Definir contratos de entrada/saÃ­da e estratÃ©gia de parser estruturado.
+3. Definir estratÃ©gia de RAG (chunking, retrieval e citaÃ§Ã£o de fontes).
 
-Fase 2 (implementação backend):
+Fase 2 (implementaÃ§Ã£o backend):
 1. Introduzir camada `app/services/langchain/` com chain de Vision.
-2. Introduzir chain STRIDE com contexto RAG e validação de schema.
+2. Introduzir chain STRIDE com contexto RAG e validaÃ§Ã£o de schema.
 3. Manter endpoints atuais sem quebra de contrato.
 
-Fase 3 (qualidade e operação):
-1. Instrumentar rastreabilidade de execução (traces por análise).
+Fase 3 (qualidade e operaÃ§Ã£o):
+1. Instrumentar rastreabilidade de execuÃ§Ã£o (traces por anÃ¡lise).
 2. Comparar qualidade entre pipeline atual e pipeline LangChain.
-3. Consolidar pipeline único e remover duplicação.
+3. Consolidar pipeline Ãºnico e remover duplicaÃ§Ã£o.
 
-## Exibição de resultado
+## ExibiÃ§Ã£o de resultado
 - Web e mobile permitem processar nova imagem ou abrir processamento salvo.
 - A tela de resultado exibe, nesta ordem:
   1. imagem submetida,
   2. `context_summary`,
   3. resumo e listagens STRIDE.
-- Ao concluir ou reabrir uma análise, web e mobile enviam 3 textos para TTS e deixam o áudio pré-carregado:
+- Ao concluir ou reabrir uma anÃ¡lise, web e mobile enviam 3 textos para TTS e deixam o Ã¡udio prÃ©-carregado:
   1. contexto da infraestrutura + criticidade geral,
-  2. ameaças e mitigações,
-  3. recomendações.
-- O usuário aciona a reprodução pelos ícones de áudio em cada seção.
+  2. ameaÃ§as e mitigaÃ§Ãµes,
+  3. recomendaÃ§Ãµes.
+- O usuÃ¡rio aciona a reproduÃ§Ã£o pelos Ã­cones de Ã¡udio em cada seÃ§Ã£o.
 - Nota de custo: para economizar chamadas TTS, desabilite `PRELOAD_TTS_ON_RESULT` em `frontend/web/src/App.tsx` e `frontend/mobile/App.tsx`.
-- O PDF também inclui imagem submetida, contexto e listagens STRIDE.
+- O PDF tambÃ©m inclui imagem submetida, contexto e listagens STRIDE.
 
-## Documentação
-- `AGENTS.md`: protocolo operacional de execução.
-- `docs/GUIA.md`: arquitetura, operação e checklist de validação.
+## DocumentaÃ§Ã£o
+- `AGENTS.md`: protocolo operacional de execuÃ§Ã£o.
+- `docs/GUIA.md`: arquitetura, operaÃ§Ã£o e checklist de validaÃ§Ã£o.
 
 ## Artefatos visuais (docs)
 Clique nas miniaturas para abrir a imagem completa:
 
-| Infraestrutura | Workflow | Estrutura de diretorios |
-| --- | --- | --- |
-| [![Infraestrutura](docs/infra.png)](docs/infra.png) | [![Workflow](docs/wf.png)](docs/wf.png) | [![Diretorios](docs/dir.png)](docs/dir.png) |
+<p align="center">
+  <a href="docs/infra.png">
+    <img src="docs/infra.png" alt="Infraestrutura" width="32%" />
+  </a>
+  <a href="docs/wf.png">
+    <img src="docs/wf.png" alt="Workflow" width="32%" />
+  </a>
+  <a href="docs/dir.png">
+    <img src="docs/dir.png" alt="Estrutura de diretorios" width="32%" />
+  </a>
+</p>
 
 Outros artefatos:
 - `docs/Hackaton IADT.pdf`
 - `docs/APRESENTACAO_10MIN.md`
 - `docs/APRESENTACAO_10MIN_v2.md`
+
