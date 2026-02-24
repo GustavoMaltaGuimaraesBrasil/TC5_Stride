@@ -6,11 +6,15 @@ import type { AnalysisListItem } from '../services/api';
 
 interface Props {
   onImageSelected: (uri: string, filename: string, mimeType?: string) => void;
+  onToggleRecording: () => void;
   analyses: AnalysisListItem[];
   historyLoading?: boolean;
   onOpenAnalysis: (id: number) => void;
   onDeleteAnalysis: (id: number) => void;
   onRefreshHistory: () => void;
+  isRecording?: boolean;
+  transcribing?: boolean;
+  transcriptionText?: string;
   disabled?: boolean;
 }
 
@@ -46,6 +50,10 @@ export default function UploadScreen({
   onOpenAnalysis,
   onDeleteAnalysis,
   onRefreshHistory,
+  onToggleRecording,
+  isRecording = false,
+  transcribing = false,
+  transcriptionText = '',
   disabled,
 }: Props) {
   const pickImage = async () => {
@@ -97,6 +105,20 @@ export default function UploadScreen({
       <TouchableOpacity style={styles.secondaryBtn} onPress={takePhoto} disabled={disabled}>
         <Text style={styles.secondaryBtnText}>Tirar Foto</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={isRecording ? styles.recordingBtn : styles.secondaryBtn}
+        onPress={onToggleRecording}
+        disabled={disabled || transcribing}
+      >
+        <Text style={isRecording ? styles.recordingBtnText : styles.secondaryBtnText}>
+          {isRecording ? 'Parar Gravacao' : 'Gravar Audio (Transcricao)'}
+        </Text>
+      </TouchableOpacity>
+      {transcribing ? <Text style={styles.emptyText}>Transcrevendo audio...</Text> : null}
+      {transcriptionText ? (
+        <Text style={styles.transcriptionText}>Transcricao: {transcriptionText}</Text>
+      ) : null}
 
       <View style={styles.historyHeader}>
         <Text style={styles.historyTitle}>Processamentos Salvos</Text>
@@ -265,5 +287,25 @@ const styles = StyleSheet.create({
     color: '#fecaca',
     fontSize: 13,
     fontWeight: '600',
+  },
+  recordingBtn: {
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.danger,
+    marginTop: 12,
+  },
+  recordingBtnText: {
+    color: '#fecaca',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  transcriptionText: {
+    color: colors.textMuted,
+    fontSize: 13,
+    marginTop: 8,
+    lineHeight: 19,
   },
 });

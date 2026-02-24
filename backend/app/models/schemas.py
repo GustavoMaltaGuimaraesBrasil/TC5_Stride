@@ -92,3 +92,17 @@ class AnalysisListItem(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class TTSSpeechRequest(BaseModel):
+    text: str = Field(..., min_length=1, description="Texto em pt-BR para sintetizar em voz.")
+
+
+class TTSSpeechResponse(BaseModel):
+    audioBase64: str
+    format: str = "mp3"
+
+
+class TranscriptionResponse(BaseModel):
+    text: str
+    model_used: str

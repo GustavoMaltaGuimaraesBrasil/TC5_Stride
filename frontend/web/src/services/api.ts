@@ -47,6 +47,27 @@ export async function deleteAnalysis(id: number): Promise<void> {
   if (!res.ok) throw new Error('Falha ao excluir analise');
 }
 
+export async function synthesizeSpeech(text: string): Promise<{ audioBase64: string; format: string }> {
+  const res = await fetch(`${API_BASE}/audio/speech`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error('Falha ao sintetizar audio');
+  return res.json();
+}
+
+export async function transcribeAudio(file: Blob, filename: string): Promise<{ text: string; model_used: string }> {
+  const formData = new FormData();
+  formData.append('file', file, filename);
+  const res = await fetch(`${API_BASE}/audio/transcribe`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) throw new Error('Falha ao transcrever audio');
+  return res.json();
+}
+
 export function getPdfUrl(id: number): string {
   return `${API_BASE}/analysis/${id}/pdf`;
 }

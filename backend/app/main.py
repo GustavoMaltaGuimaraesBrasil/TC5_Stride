@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.models.database import init_db
-from app.routers import analysis, health
+from app.routers import analysis, health, voice
 
 
 def create_app() -> FastAPI:
@@ -28,6 +28,7 @@ def create_app() -> FastAPI:
     # Routers
     app.include_router(health.router, prefix="/api", tags=["health"])
     app.include_router(analysis.router, prefix="/api", tags=["analysis"])
+    app.include_router(voice.router, prefix="/api", tags=["voice"])
 
     @app.on_event("startup")
     async def startup():

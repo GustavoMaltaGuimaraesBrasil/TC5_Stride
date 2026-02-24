@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, Alert, Platform, StatusBar as RNStatusBar, Image } from 'react-native';
+import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system/legacy';
 import UploadScreen from './src/screens/UploadScreen';
 import LoadingScreen from './src/screens/LoadingScreen';
 import ResultsScreen from './src/screens/ResultsScreen';
-import { uploadAndAnalyze, getAnalysis, getImageUrl, listAnalyses, deleteAnalysis } from './src/services/api';
+import { uploadAndAnalyze, getAnalysis, getImageUrl, listAnalyses, deleteAnalysis, synthesizeSpeech, transcribeAudio } from './src/services/api';
 import type { AnalysisListItem, AnalysisResponse } from './src/services/api';
 import { colors } from './src/theme/colors';
 const fiapLogo = require('./assets/fiap-logo.jpg');
@@ -20,6 +22,11 @@ export default function App() {
   const [loadingStage, setLoadingStage] = useState('Extraindo componentes, grupos e fluxos...');
   const [history, setHistory] = useState<AnalysisListItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
+  const [transcriptionText, setTranscriptionText] = useState('');
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
 
   useEffect(() => {
     void loadHistory();
@@ -49,6 +56,7 @@ export default function App() {
       setResult(data);
       setImageUri(data.image_url || getImageUrl(data.id));
       setState('done');
+      await playSummaryAudio(data.diagram?.context_summary || '');
       void loadHistory();
     } catch (err: any) {
       setError(err.message || 'Erro desconhecido');
@@ -74,6 +82,7 @@ export default function App() {
       setResult(data);
       setImageUri(data.image_url || getImageUrl(data.id));
       setState('done');
+      await playSummaryAudio(data.diagram?.context_summary || '');
     } catch (err: any) {
       setError(err.message || 'Falha ao abrir analise');
       setState('error');
@@ -87,7 +96,80 @@ export default function App() {
     setFilename('');
     setImageUri('');
     setLoadingStage('Extraindo componentes, grupos e fluxos...');
+    setTranscriptionText('');
     void loadHistory();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        void sound.unloadAsync();
+      }
+    };
+  }, [sound]);
+
+  const playSummaryAudio = async (summary: string) => {
+    const text = summary.trim();
+    if (!text) return;
+    try {
+      const { audioBase64 } = await synthesizeSpeech(text);
+      const fileUri = `${FileSystem.cacheDirectory}summary-${Date.now()}.mp3`;
+      await FileSystem.writeAsStringAsync(fileUri, audioBase64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      if (sound) {
+        await sound.unloadAsync();
+      }
+      const next = new Audio.Sound();
+      await next.loadAsync({ uri: fileUri }, { shouldPlay: true });
+      setSound(next);
+    } catch {
+      // nao interromper fluxo principal
+    }
+  };
+
+  const toggleRecording = async () => {
+    if (isRecording && recording) {
+      try {
+        setIsRecording(false);
+        await recording.stopAndUnloadAsync();
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+        const uri = recording.getURI();
+        setRecording(null);
+        if (uri) {
+          setTranscribing(true);
+          const data = await transcribeAudio(uri);
+          setTranscriptionText(data.text);
+        }
+      } catch (err: any) {
+        setError(err.message || 'Falha ao finalizar gravacao');
+        setState('error');
+      } finally {
+        setTranscribing(false);
+      }
+      return;
+    }
+
+    try {
+      const permission = await Audio.requestPermissionsAsync();
+      if (!permission.granted) {
+        setError('Permissao de microfone negada.');
+        setState('error');
+        return;
+      }
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+      const nextRecording = new Audio.Recording();
+      await nextRecording.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+      await nextRecording.startAsync();
+      setRecording(nextRecording);
+      setIsRecording(true);
+    } catch (err: any) {
+      setError(err.message || 'Falha ao iniciar gravacao');
+      setState('error');
+    }
   };
 
   const handleDeleteAnalysis = (analysisId: number) => {
@@ -137,11 +219,15 @@ export default function App() {
       {state === 'idle' && (
         <UploadScreen
           onImageSelected={handleImageSelected}
+          onToggleRecording={toggleRecording}
           analyses={history}
           historyLoading={historyLoading}
           onOpenAnalysis={handleOpenAnalysis}
           onDeleteAnalysis={handleDeleteAnalysis}
           onRefreshHistory={loadHistory}
+          isRecording={isRecording}
+          transcribing={transcribing}
+          transcriptionText={transcriptionText}
         />
       )}
 
