@@ -10,14 +10,12 @@ echo ==========================================
 echo.
 echo 1. Subir Web
 echo 2. Subir Mobile com QR Code (rede local)
-echo 4. Executar Teste Automatico (pasta teste)
 echo 0. Sair
 echo.
 set /p opt=Escolha uma opcao: 
 
 if "%opt%"=="1" goto web
 if "%opt%"=="2" goto mobile_qr
-if "%opt%"=="4" goto run_test
 if "%opt%"=="0" goto end
 
 echo.
@@ -57,29 +55,6 @@ cd /d "%~dp0frontend\mobile"
 call npm install --include=dev --no-audit
 call npx expo start --host lan -c
 goto end
-
-:run_test
-call :start_backend
-if not exist "teste\test_batch.py" (
-  echo.
-  echo Script de teste nao encontrado em teste\test_batch.py
-  pause
-  goto menu
-)
-if not exist "teste" (
-  echo.
-  echo Pasta teste nao encontrada.
-  pause
-  goto menu
-)
-echo.
-echo Executando teste automatizado...
-cd /d "%~dp0"
-python teste\test_batch.py
-echo.
-echo Fim do teste. Relatorio esperado em teste\test_report.json
-pause
-goto menu
 
 :end
 endlocal

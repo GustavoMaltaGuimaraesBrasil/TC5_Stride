@@ -57,21 +57,6 @@ run_mobile_qr() {
   npx expo start --host lan -c
 }
 
-run_test() {
-  start_backend
-  if [[ ! -f "$ROOT_DIR/teste/test_batch.py" ]]; then
-    echo
-    echo "Script de teste nao encontrado em teste/test_batch.py"
-    return 1
-  fi
-  echo
-  echo "Executando teste automatizado..."
-  cd "$ROOT_DIR"
-  python teste/test_batch.py
-  echo
-  echo "Fim do teste. Relatorio esperado em teste/test_report.json"
-}
-
 while true; do
   clear
   echo "=========================================="
@@ -80,7 +65,6 @@ while true; do
   echo
   echo "1. Subir Web"
   echo "2. Subir Mobile com QR Code (rede local)"
-  echo "4. Executar Teste Automatico (pasta teste)"
   echo "0. Sair"
   echo
   read -r -p "Escolha uma opcao: " opt
@@ -88,7 +72,6 @@ while true; do
   case "$opt" in
     1) run_web; break ;;
     2) run_mobile_qr; break ;;
-    4) run_test; read -r -p "Pressione Enter para voltar ao menu..." _ ;;
     0) exit 0 ;;
     *) echo; echo "Opcao invalida."; sleep 1 ;;
   esac
