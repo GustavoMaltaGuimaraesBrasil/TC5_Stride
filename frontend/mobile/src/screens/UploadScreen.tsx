@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { colors } from '../theme/colors';
@@ -84,9 +84,9 @@ export default function UploadScreen({
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.hero}>
         <Text style={styles.icon}>[STRIDE]</Text>
-        <Text style={styles.title}>Modelador de Ameacas STRIDE</Text>
+        <Text style={styles.title}>{'Modelador de Amea\u00e7as STRIDE'}</Text>
         <Text style={styles.subtitle}>
-          Envie ou fotografe um diagrama de arquitetura para receber uma analise STRIDE automatizada
+          {'Envie ou fotografe um diagrama de arquitetura para receber uma an\u00e1lise STRIDE automatizada'}
         </Text>
       </View>
 
@@ -112,7 +112,7 @@ export default function UploadScreen({
           <View key={item.id} style={styles.historyItem}>
             <Text style={styles.historyItemTitle}>#{item.id} - {item.image_filename}</Text>
             <Text style={styles.historyItemMeta}>
-              Status: {item.status} | Ameacas: {item.threat_count}
+              {`Status: ${item.status} | Amea\u00e7as: ${item.threat_count}`}
             </Text>
             <View style={styles.historyActions}>
               <TouchableOpacity

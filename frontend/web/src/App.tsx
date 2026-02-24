@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import UploadZone from './components/UploadZone'
 import ResultsView from './components/ResultsView'
 import { uploadAndAnalyze, getPdfUrl, getAnalysis, getImageUrl, listAnalyses, deleteAnalysis, synthesizeSpeech } from './services/api'
@@ -6,6 +6,14 @@ import type { AnalysisListItem, AnalysisResponse } from './services/api'
 import fiapLogo from './assets/fiap-logo.jpg'
 
 type AppState = 'idle' | 'uploading' | 'opening' | 'done' | 'error'
+type SpeechSection = 'description' | 'threats' | 'bottom'
+
+const PRELOAD_TTS_ON_RESULT = true
+const EMPTY_SPEECH_CACHE: Record<SpeechSection, string> = {
+  description: '',
+  threats: '',
+  bottom: '',
+}
 
 export default function App() {
   const [state, setState] = useState<AppState>('idle');
@@ -15,7 +23,9 @@ export default function App() {
   const [imageUrl, setImageUrl] = useState<string>('');
   const [history, setHistory] = useState<AnalysisListItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState<boolean>(false);
+  const [speechCache, setSpeechCache] = useState<Record<SpeechSection, string>>(EMPTY_SPEECH_CACHE);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const speechRequestRef = useRef(0);
 
   useEffect(() => {
     void loadHistory();
@@ -43,8 +53,8 @@ export default function App() {
       const data = await uploadAndAnalyze(file);
       setResult(data);
       setImageUrl(data.image_url || getImageUrl(data.id));
+      void prepareSpeechCache(data);
       setState('done');
-      void playSummaryAudio(data.diagram?.context_summary || '');
       void loadHistory();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Erro desconhecido');
@@ -55,26 +65,28 @@ export default function App() {
   const handleOpenAnalysis = async (analysisId: number) => {
     setState('opening');
     setError('');
-    setSelectedFile(`Analise #${analysisId}`);
+    setSelectedFile(`Análise #${analysisId}`);
     try {
       const data = await getAnalysis(analysisId);
       if (data.status !== 'done' || !data.diagram || !data.stride) {
         const message = data.status === 'error'
-          ? (data.error_message || 'A analise falhou e nao possui resultado para abertura.')
-          : 'A analise ainda esta em processamento. Tente novamente em instantes.';
+          ? (data.error_message || 'A análise falhou e não possui resultado para abertura.')
+          : 'A análise ainda está em processamento. Tente novamente em instantes.';
         throw new Error(message);
       }
       setResult(data);
       setImageUrl(data.image_url || getImageUrl(data.id));
+      void prepareSpeechCache(data);
       setState('done');
-      void playSummaryAudio(data.diagram?.context_summary || '');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Falha ao abrir analise');
+      setError(err instanceof Error ? err.message : 'Falha ao abrir análise');
       setState('error');
     }
   };
 
   const handleReset = () => {
+    speechRequestRef.current += 1;
+    setSpeechCache({ ...EMPTY_SPEECH_CACHE });
     setState('idle');
     setResult(null);
     setError('');
@@ -83,11 +95,58 @@ export default function App() {
     void loadHistory();
   };
 
-  const playSummaryAudio = async (summary: string) => {
-    const text = summary.trim();
-    if (!text) return;
+  const buildDescriptionNarration = (analysis: AnalysisResponse): string => {
+    const diagram = analysis.diagram;
+    const stride = analysis.stride;
+    if (!diagram || !stride) return '';
+
+    return [
+      `Descrição do projeto: ${diagram.context_summary || 'Contexto não identificado.'}`,
+      (
+        `Criticidade geral: total ${stride.summary.total_threats} ameaças. ` +
+        `Críticas ${stride.summary.critical}, altas ${stride.summary.high}, ` +
+        `médias ${stride.summary.medium}, baixas ${stride.summary.low}.`
+      ),
+    ].join(' ');
+  };
+
+  const buildThreatsNarration = (analysis: AnalysisResponse): string => {
+    const stride = analysis.stride;
+    if (!stride) return '';
+
+    const severityPt: Record<string, string> = {
+      critical: 'crítica',
+      high: 'alta',
+      medium: 'média',
+      low: 'baixa',
+    };
+
+    const items = stride.threats.map((t, idx) => {
+      const sev = severityPt[t.severity] ?? t.severity;
+      return (
+        `Item ${idx + 1}, ${t.target_name}, categoria ${t.stride_category}. ` +
+        `Criticidade ${sev}. ` +
+        `Ponto de atenção: ${t.description}. ` +
+        `Como mitigar: ${t.mitigation}.`
+      );
+    });
+
+    return items.length > 0 ? items.join(' ') : 'Não há ameaças registradas.';
+  };
+
+  const buildBottomNarration = (analysis: AnalysisResponse): string => {
+    const stride = analysis.stride;
+    if (!stride) return '';
+    if (stride.recommendations.length === 0) return 'Não há recomendações adicionais.';
+
+    return stride.recommendations
+      .map((rec, index) => `Recomendação ${index + 1}: ${rec}.`)
+      .join(' ');
+  };
+
+  const playAudioBase64 = async (audioBase64: string) => {
+    if (!audioBase64) return;
     try {
-      const { audioBase64 } = await synthesizeSpeech(text);
       if (audioRef.current) {
         audioRef.current.pause();
       }
@@ -95,12 +154,74 @@ export default function App() {
       audioRef.current = nextAudio;
       await nextAudio.play();
     } catch {
-      // nao interromper fluxo principal
+      // não interromper fluxo principal
     }
   };
 
+  const playSectionAudio = async (section: SpeechSection, text: string) => {
+    const cached = speechCache[section];
+    if (cached) {
+      await playAudioBase64(cached);
+      return;
+    }
+
+    const normalized = text.trim();
+    if (!normalized) return;
+
+    try {
+      const { audioBase64 } = await synthesizeSpeech(normalized);
+      setSpeechCache((prev) => ({ ...prev, [section]: audioBase64 }));
+      await playAudioBase64(audioBase64);
+    } catch {
+      // não interromper fluxo principal
+    }
+  };
+
+  async function prepareSpeechCache(analysis: AnalysisResponse) {
+    if (!PRELOAD_TTS_ON_RESULT) return;
+    if (!analysis.diagram || !analysis.stride) return;
+
+    const requestId = ++speechRequestRef.current;
+    setSpeechCache({ ...EMPTY_SPEECH_CACHE });
+
+    const segments: Record<SpeechSection, string> = {
+      description: buildDescriptionNarration(analysis),
+      threats: buildThreatsNarration(analysis),
+      bottom: buildBottomNarration(analysis),
+    };
+
+    await Promise.all(
+      (Object.entries(segments) as [SpeechSection, string][])
+        .filter(([, text]) => text.trim().length > 0)
+        .map(async ([section, text]) => {
+          try {
+            const { audioBase64 } = await synthesizeSpeech(text);
+            if (speechRequestRef.current !== requestId) return;
+            setSpeechCache((prev) => ({ ...prev, [section]: audioBase64 }));
+          } catch {
+            // manter fluxo principal mesmo se pre-cache falhar
+          }
+        }),
+    );
+  }
+
+  const handleSpeakDescription = () => {
+    if (!result) return;
+    void playSectionAudio('description', buildDescriptionNarration(result));
+  };
+
+  const handleSpeakThreatsAndMitigations = () => {
+    if (!result) return;
+    void playSectionAudio('threats', buildThreatsNarration(result));
+  };
+
+  const handleSpeakBottom = () => {
+    if (!result) return;
+    void playSectionAudio('bottom', buildBottomNarration(result));
+  };
+
   const handleDeleteAnalysis = async (analysisId: number) => {
-    const confirmed = window.confirm(`Deseja excluir a analise #${analysisId}?`);
+    const confirmed = window.confirm(`Deseja excluir a análise #${analysisId}?`);
     if (!confirmed) return;
 
     try {
@@ -111,7 +232,7 @@ export default function App() {
       }
       void loadHistory();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Falha ao excluir analise');
+      setError(err instanceof Error ? err.message : 'Falha ao excluir análise');
       setState('error');
     }
   };
@@ -135,7 +256,7 @@ export default function App() {
         </div>
         {state === 'done' && (
           <button className="btn-secondary" onClick={handleReset}>
-            + Nova Analise
+            Voltar
           </button>
         )}
       </header>
@@ -146,7 +267,7 @@ export default function App() {
             <div className="history-list">
               <h3 className="section-title">Processamentos Salvos</h3>
               {historyLoading && (
-                <p style={{ color: 'var(--text-muted)' }}>Carregando historico...</p>
+                <p style={{ color: 'var(--text-muted)' }}>Carregando histórico...</p>
               )}
               {!historyLoading && history.length === 0 && (
                 <p style={{ color: 'var(--text-muted)' }}>Nenhum processamento salvo ainda.</p>
@@ -157,7 +278,7 @@ export default function App() {
                     <div style={{ textAlign: 'left' }}>
                       <strong>#{item.id} - {item.image_filename}</strong>
                       <p style={{ color: 'var(--text-muted)', marginTop: 4 }}>
-                        Status: {item.status} | Ameacas: {item.threat_count}
+                        {`Status: ${item.status} | Amea\u00e7as: ${item.threat_count}`}
                       </p>
                     </div>
                     <div className="history-actions">
@@ -207,6 +328,9 @@ export default function App() {
             onDownloadPdf={handleDownloadPdf}
             onReset={handleReset}
             onDelete={handleDeleteAnalysis}
+            onSpeakDescription={handleSpeakDescription}
+            onSpeakThreatsAndMitigations={handleSpeakThreatsAndMitigations}
+            onSpeakBottom={handleSpeakBottom}
           />
         )}
       </div>

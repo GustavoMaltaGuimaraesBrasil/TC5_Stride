@@ -24,7 +24,7 @@ export async function uploadAndAnalyze(file: File): Promise<AnalysisResponse> {
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || 'Falha na analise');
+    throw new Error(err.detail || 'Falha na análise');
   }
 
   return res.json();
@@ -32,19 +32,19 @@ export async function uploadAndAnalyze(file: File): Promise<AnalysisResponse> {
 
 export async function getAnalysis(id: number): Promise<AnalysisResponse> {
   const res = await fetch(`${API_BASE}/analysis/${id}`);
-  if (!res.ok) throw new Error('Falha ao buscar analise');
+  if (!res.ok) throw new Error('Falha ao buscar análise');
   return res.json();
 }
 
 export async function listAnalyses(): Promise<AnalysisListItem[]> {
   const res = await fetch(`${API_BASE}/analysis`);
-  if (!res.ok) throw new Error('Falha ao buscar analises');
+  if (!res.ok) throw new Error('Falha ao buscar análises');
   return res.json();
 }
 
 export async function deleteAnalysis(id: number): Promise<void> {
   const res = await fetch(`${API_BASE}/analysis/${id}`, { method: 'DELETE' });
-  if (!res.ok) throw new Error('Falha ao excluir analise');
+  if (!res.ok) throw new Error('Falha ao excluir análise');
 }
 
 export async function synthesizeSpeech(text: string): Promise<{ audioBase64: string; format: string }> {

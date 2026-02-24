@@ -10,18 +10,18 @@ interface Props {
 export default function ThreatCard({ threat }: Props) {
   const borderColor = severityColor(threat.severity);
   const severityLabel: Record<string, string> = {
-    critical: 'CRITICO',
+    critical: 'CRÍTICO',
     high: 'ALTO',
-    medium: 'MEDIO',
+    medium: 'MÉDIO',
     low: 'BAIXO',
   };
   const strideLabel: Record<string, string> = {
-    Spoofing: 'Falsificacao de Identidade',
-    Tampering: 'Violacao de Integridade',
-    Repudiation: 'Repudio',
-    'Information Disclosure': 'Divulgacao de Informacao',
-    'Denial of Service': 'Negacao de Servico',
-    'Elevation of Privilege': 'Elevacao de Privilegio',
+    Spoofing: 'Falsificação de Identidade',
+    Tampering: 'Violação de Integridade',
+    Repudiation: 'Repúdio',
+    'Information Disclosure': 'Divulgação de Informação',
+    'Denial of Service': 'Negação de Serviço',
+    'Elevation of Privilege': 'Elevação de Privilégio',
   };
 
   return (
@@ -37,7 +37,7 @@ export default function ThreatCard({ threat }: Props) {
       <Text style={styles.target}>{threat.target_name}</Text>
       <Text style={styles.description}>{threat.description}</Text>
       <Text style={styles.mitigation}>
-        <Text style={styles.bold}>Mitigacao: </Text>
+        <Text style={styles.bold}>Mitigação: </Text>
         {threat.mitigation}
       </Text>
       {threat.affected_flows.length > 0 && (
@@ -48,13 +48,13 @@ export default function ThreatCard({ threat }: Props) {
       )}
       {threat.evidence.length > 0 && (
         <Text style={styles.flows}>
-          <Text style={styles.bold}>Evidencias: </Text>
+          <Text style={styles.bold}>Evidências: </Text>
           {threat.evidence.join(' | ')}
         </Text>
       )}
       {threat.reference_ids.length > 0 && (
         <Text style={styles.flows}>
-          <Text style={styles.bold}>Referencias: </Text>
+          <Text style={styles.bold}>Referências: </Text>
           {threat.reference_ids.join(', ')}
         </Text>
       )}

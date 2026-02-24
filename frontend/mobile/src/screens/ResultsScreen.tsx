@@ -20,15 +20,26 @@ interface Props {
   imageUri?: string;
   onReset: () => void;
   onDelete: (analysisId: number) => void;
+  onSpeakDescription: () => void;
+  onSpeakThreatsAndMitigations: () => void;
+  onSpeakBottom: () => void;
 }
 
-export default function ResultsScreen({ result, imageUri, onReset, onDelete }: Props) {
+export default function ResultsScreen({
+  result,
+  imageUri,
+  onReset,
+  onDelete,
+  onSpeakDescription,
+  onSpeakThreatsAndMitigations,
+  onSpeakBottom,
+}: Props) {
   const { diagram, stride } = result;
 
   if (!diagram || !stride) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>Nenhum resultado disponivel.</Text>
+        <Text style={styles.errorText}>Nenhum resultado disponível.</Text>
         <TouchableOpacity style={styles.primaryBtn} onPress={onReset}>
           <Text style={styles.btnText}>Tentar Novamente</Text>
         </TouchableOpacity>
@@ -43,7 +54,7 @@ export default function ResultsScreen({ result, imageUri, onReset, onDelete }: P
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>Resultado da Analise</Text>
+        <Text style={styles.heading}>Resultado da Análise</Text>
         <Text style={styles.filename}>{result.image_filename}</Text>
 
         <SummaryCards summary={stride.summary} />
@@ -57,7 +68,12 @@ export default function ResultsScreen({ result, imageUri, onReset, onDelete }: P
 
         {diagram.context_summary ? (
           <>
-            <Text style={styles.sectionTitle}>Contexto da Infraestrutura</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitleNoBorder}>Contexto da Infraestrutura</Text>
+              <TouchableOpacity style={styles.voiceIconBtn} onPress={onSpeakDescription}>
+                <Text style={styles.voiceIconText}>🔊</Text>
+              </TouchableOpacity>
+            </View>
             <Text style={styles.recommendation}>{diagram.context_summary}</Text>
           </>
         ) : null}
@@ -66,14 +82,24 @@ export default function ResultsScreen({ result, imageUri, onReset, onDelete }: P
           Arquitetura: {diagram.components.length} componentes, {diagram.groups.length} grupos, {diagram.flows.length} fluxos
         </Text>
 
-        <Text style={styles.sectionTitle}>Ameacas</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitleNoBorder}>Ameaças</Text>
+          <TouchableOpacity style={styles.voiceIconBtn} onPress={onSpeakThreatsAndMitigations}>
+            <Text style={styles.voiceIconText}>🔊</Text>
+          </TouchableOpacity>
+        </View>
         {stride.threats.map((threat) => (
           <ThreatCard key={threat.id} threat={threat} />
         ))}
 
         {stride.recommendations.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Recomendacoes</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitleNoBorder}>Recomendações</Text>
+              <TouchableOpacity style={styles.voiceIconBtn} onPress={onSpeakBottom}>
+                <Text style={styles.voiceIconText}>🔊</Text>
+              </TouchableOpacity>
+            </View>
             {stride.recommendations.map((rec, i) => (
               <Text key={i} style={styles.recommendation}>
                 {i + 1}. {rec}
@@ -87,10 +113,10 @@ export default function ResultsScreen({ result, imageUri, onReset, onDelete }: P
             <Text style={styles.btnText}>Baixar PDF</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.secondaryBtn} onPress={onReset}>
-            <Text style={styles.secondaryBtnText}>+ Nova Analise</Text>
+            <Text style={styles.secondaryBtnText}>Voltar</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.dangerBtn} onPress={() => onDelete(result.id)}>
-            <Text style={styles.dangerBtnText}>Excluir Analise</Text>
+            <Text style={styles.dangerBtnText}>Excluir Análise</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -135,6 +161,35 @@ const styles = StyleSheet.create({
     paddingBottom: 6,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  sectionHeader: {
+    marginTop: 16,
+    marginBottom: 10,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sectionTitleNoBorder: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  voiceIconBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  voiceIconText: {
+    color: colors.text,
+    fontSize: 16,
   },
   recommendation: {
     color: colors.textMuted,
@@ -199,3 +254,4 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 });
+

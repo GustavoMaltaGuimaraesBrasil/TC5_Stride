@@ -7,7 +7,7 @@ Entregar analise STRIDE de diagramas de arquitetura com fluxo LLM-first e saida 
 - Entrada: imagem (`PNG`, `JPG`, `JPEG`, `GIF`, `WEBP`, `BMP`).
 - Estagio 1 (Vision): extrai `context_summary`, `components`, `groups`, `flows`.
 - Estagio 2 (STRIDE): gera ameacas, mitigacoes e recomendacoes com RAG local.
-- Voz: sintetiza o `context_summary` em pt-BR no backend e reproduz automaticamente no frontend.
+- Voz: sintetiza narracao em pt-BR no backend; web/mobile pre-carregam 3 audios no carregamento do resultado.
 - Persistencia: cada processamento fica salvo em SQLite e pode ser reaberto.
 - Saida: JSON + PDF.
 
@@ -83,7 +83,12 @@ Regra de compatibilidade:
 
 Observacao de voz:
 - A UI do usuario final nao possui gravacao de audio.
-- O sistema apenas reproduz automaticamente o audio do contexto ao concluir/reabrir analise.
+- Ao concluir/reabrir analise, o sistema pre-carrega audio para:
+  1. contexto + criticidade,
+  2. ameacas + mitigacoes,
+  3. recomendacoes.
+- A reproducao e acionada pelo usuario via icones de audio em cada secao.
+- Nota de custo: para economizar chamadas TTS, desabilitar `PRELOAD_TTS_ON_RESULT` em `frontend/web/src/App.tsx` e `frontend/mobile/App.tsx`.
 
 ## Execucao local
 ### Backend

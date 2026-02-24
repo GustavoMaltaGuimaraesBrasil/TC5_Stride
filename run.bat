@@ -55,7 +55,7 @@ echo Para Android: instalar e abrir Expo Go.
 echo Para iPhone: usar Camera para ler o QR (ou app Expo Go).
 cd /d "%~dp0frontend\mobile"
 call npm install --include=dev --no-audit
-call npx expo start
+call npx expo start --host lan -c
 goto end
 
 :run_test

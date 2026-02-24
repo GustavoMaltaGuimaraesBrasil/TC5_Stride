@@ -52,7 +52,7 @@ async def create_analysis(
         raise HTTPException(
             400,
             (
-                f"Tipo de arquivo nao suportado: {ext}. "
+                f"Tipo de arquivo não suportado: {ext}. "
                 "Use PNG, JPG, JPEG, GIF, WEBP ou BMP."
             ),
         )
@@ -105,7 +105,7 @@ async def create_analysis(
         analysis_record.status = "error"
         analysis_record.error_message = "Falha na execucao do pipeline. Consulte os logs do servidor."
         await session.commit()
-        raise HTTPException(500, "Falha no pipeline de analise. Consulte os logs do backend.")
+        raise HTTPException(500, "Falha no pipeline de análise. Consulte os logs do backend.")
 
 
 @router.get("/analysis", response_model=list[AnalysisListItem])
@@ -137,7 +137,7 @@ async def get_analysis(analysis_id: int, session: AsyncSession = Depends(get_ses
     result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
     row = result.scalar_one_or_none()
     if not row:
-        raise HTTPException(404, "Analise nao encontrada")
+        raise HTTPException(404, "Análise não encontrada")
 
     diagram = DiagramAnalysis.model_validate(row.diagram_json) if row.diagram_json else None
     stride_data = STRIDEReport.model_validate(row.stride_json) if row.stride_json else None
@@ -161,9 +161,9 @@ async def download_pdf(analysis_id: int, session: AsyncSession = Depends(get_ses
     result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
     row = result.scalar_one_or_none()
     if not row:
-        raise HTTPException(404, "Analise nao encontrada")
+        raise HTTPException(404, "Análise não encontrada")
     if row.status != "done":
-        raise HTTPException(400, "A analise ainda nao foi concluida")
+        raise HTTPException(400, "A análise ainda não foi concluída")
 
     diagram = DiagramAnalysis.model_validate(row.diagram_json)
     stride_data = STRIDEReport.model_validate(row.stride_json)
@@ -188,11 +188,11 @@ async def get_analysis_image(analysis_id: int, session: AsyncSession = Depends(g
     result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
     row = result.scalar_one_or_none()
     if not row:
-        raise HTTPException(404, "Analise nao encontrada")
+        raise HTTPException(404, "Análise não encontrada")
 
     image_path = Path(row.image_path)
     if not image_path.exists():
-        raise HTTPException(404, "Imagem da analise nao encontrada")
+        raise HTTPException(404, "Imagem da análise não encontrada")
 
     media_type, _ = mimetypes.guess_type(image_path.name)
     return FileResponse(
@@ -208,7 +208,7 @@ async def delete_analysis(analysis_id: int, session: AsyncSession = Depends(get_
     result = await session.execute(select(Analysis).where(Analysis.id == analysis_id))
     row = result.scalar_one_or_none()
     if not row:
-        raise HTTPException(404, "Analise nao encontrada")
+        raise HTTPException(404, "Análise não encontrada")
 
     original_path = Path(row.image_path)
     normalized_path = original_path.with_suffix(".normalized.png")

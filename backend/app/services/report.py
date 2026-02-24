@@ -31,19 +31,19 @@ _SEVERITY_COLORS = {
 }
 
 _SEVERITY_LABEL_PT = {
-    "critical": "CRITICO",
+    "critical": "CRÍTICO",
     "high": "ALTO",
-    "medium": "MEDIO",
+    "medium": "MÉDIO",
     "low": "BAIXO",
 }
 
 _STRIDE_LABEL_PT = {
-    "Spoofing": "Falsificacao de Identidade",
-    "Tampering": "Violacao de Integridade",
-    "Repudiation": "Repudio",
-    "Information Disclosure": "Divulgacao de Informacao",
-    "Denial of Service": "Negacao de Servico",
-    "Elevation of Privilege": "Elevacao de Privilegio",
+    "Spoofing": "Falsificação de Identidade",
+    "Tampering": "Violação de Integridade",
+    "Repudiation": "Repúdio",
+    "Information Disclosure": "Divulgação de Informação",
+    "Denial of Service": "Negação de Serviço",
+    "Elevation of Privilege": "Elevação de Privilégio",
 }
 
 
@@ -83,7 +83,7 @@ def generate_pdf(
     image_filename: str,
     image_path: str | None = None,
 ) -> bytes:
-    """Gera um relatorio PDF e retorna como bytes."""
+    """Gera um relatório PDF e retorna como bytes."""
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -106,7 +106,7 @@ def generate_pdf(
     elements = []
 
     # Titulo
-    elements.append(Paragraph("Relatorio de Analise de Ameacas STRIDE", styles["Title"]))
+    elements.append(Paragraph("Relatório de Análise de Ameaças STRIDE", styles["Title"]))
     elements.append(Spacer(1, 4 * mm))
     elements.append(
         Paragraph(
@@ -130,7 +130,7 @@ def generate_pdf(
     # Tabela de resumo
     elements.append(Paragraph("Resumo Executivo", styles["Heading2"]))
     summary_data = [
-        ["Total de Ameacas", "Critico", "Alto", "Medio", "Baixo"],
+        ["Total de Ameaças", "Crítico", "Alto", "Médio", "Baixo"],
         [
             str(report.summary.total_threats),
             str(report.summary.critical),
@@ -156,8 +156,8 @@ def generate_pdf(
     elements.append(summary_table)
     elements.append(Spacer(1, 8 * mm))
 
-    # Visao geral da arquitetura
-    elements.append(Paragraph("Visao Geral da Arquitetura", styles["Heading2"]))
+    # Visão geral da arquitetura
+    elements.append(Paragraph("Visão Geral da Arquitetura", styles["Heading2"]))
     elements.append(
         Paragraph(
             f"Componentes: {len(diagram.components)} &nbsp;|&nbsp; "
@@ -193,8 +193,8 @@ def generate_pdf(
         elements.append(comp_table)
     elements.append(Spacer(1, 8 * mm))
 
-    # Ameacas
-    elements.append(Paragraph("Detalhes das Ameacas", styles["Heading2"]))
+    # Ameaças
+    elements.append(Paragraph("Detalhes das Ameaças", styles["Heading2"]))
     elements.append(Spacer(1, 4 * mm))
 
     for threat in report.threats:
@@ -208,8 +208,8 @@ def generate_pdf(
                 styles["ThreatTitle"],
             )
         )
-        elements.append(Paragraph(f"<b>Descricao:</b> {threat.description}", styles["Normal"]))
-        elements.append(Paragraph(f"<b>Mitigacao:</b> {threat.mitigation}", styles["Normal"]))
+        elements.append(Paragraph(f"<b>Descrição:</b> {threat.description}", styles["Normal"]))
+        elements.append(Paragraph(f"<b>Mitigação:</b> {threat.mitigation}", styles["Normal"]))
         if threat.affected_flows:
             elements.append(
                 Paragraph(
@@ -220,23 +220,23 @@ def generate_pdf(
         if threat.evidence:
             elements.append(
                 Paragraph(
-                    f"<b>Evidencias:</b> {'; '.join(threat.evidence)}",
+                    f"<b>Evidências:</b> {'; '.join(threat.evidence)}",
                     styles["Normal"],
                 )
             )
         if threat.reference_ids:
             elements.append(
                 Paragraph(
-                    f"<b>Referencias:</b> {', '.join(threat.reference_ids)}",
+                    f"<b>Referências:</b> {', '.join(threat.reference_ids)}",
                     styles["Normal"],
                 )
             )
         elements.append(Spacer(1, 4 * mm))
 
-    # Recomendacoes
+    # Recomendações
     if report.recommendations:
         elements.append(PageBreak())
-        elements.append(Paragraph("Recomendacoes", styles["Heading2"]))
+        elements.append(Paragraph("Recomendações", styles["Heading2"]))
         for i, rec in enumerate(report.recommendations, 1):
             elements.append(Paragraph(f"{i}. {rec}", styles["Normal"]))
             elements.append(Spacer(1, 2 * mm))
