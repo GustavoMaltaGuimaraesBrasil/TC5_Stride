@@ -24,7 +24,9 @@ export default function SummaryCards({ summary }: Props) {
       {cards.map((card) => (
         <View key={card.label} style={styles.card}>
           <Text style={[styles.count, { color: card.color }]}>{card.value}</Text>
-          <Text style={styles.label}>{card.label}</Text>
+          <Text style={styles.label} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85}>
+            {card.label}
+          </Text>
         </View>
       ))}
     </View>
@@ -34,7 +36,6 @@ export default function SummaryCards({ summary }: Props) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
     marginBottom: 16,
   },

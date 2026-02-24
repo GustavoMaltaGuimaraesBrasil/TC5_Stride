@@ -107,7 +107,8 @@ export default function App() {
       const data = await uploadAndAnalyze(uri, name, mimeType);
       // Salva resultado para renderizacao.
       setResult(data);
-      setImageUri(data.image_url || getImageUrl(data.id));
+      // Usa sempre URL absoluta calculada no cliente mobile.
+      setImageUri(getImageUrl(data.id));
       // Prepara audios em segundo plano.
       void prepareSpeechCache(data);
       setState('done');
@@ -138,7 +139,8 @@ export default function App() {
         throw new Error(message);
       }
       setResult(data);
-      setImageUri(data.image_url || getImageUrl(data.id));
+      // Usa sempre URL absoluta calculada no cliente mobile.
+      setImageUri(getImageUrl(data.id));
       // Pre-cache de audio para resposta instantanea dos botoes.
       void prepareSpeechCache(data);
       setState('done');

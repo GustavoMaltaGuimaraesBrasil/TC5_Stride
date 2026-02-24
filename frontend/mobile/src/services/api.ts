@@ -1,29 +1,91 @@
 /** Cliente de API mobile para analise, historico, exclusao e sintese de voz. */
 
+import Constants from 'expo-constants';
 import { NativeModules, Platform } from 'react-native';
+import type { AnalysisListItem, AnalysisResponse } from '../../../src/types/analysis';
 
-/** Executa a funcao resolveApiBase. */
-function resolveApiBase(): string {
-  const envBase = process.env.EXPO_PUBLIC_API_BASE?.trim();
-  if (envBase) return envBase.replace(/\/+$/, '');
+/** Executa a funcao extractHost. */
+function extractHost(raw: string): string {
+  // Aceita entradas como:
+  // - exp://192.168.0.10:8081
+  // - http://192.168.0.10:8081/index.bundle
+  // - 192.168.0.10:8081
+  const trimmed = String(raw || '').trim();
+  if (!trimmed) return '';
 
-  // Infer host from Metro bundle URL, e.g.:
-  // http://192.168.3.192:8081/index.bundle?platform=android...
-  const scriptURL = String(NativeModules?.SourceCode?.scriptURL ?? '');
-  const hostMatch = scriptURL.match(/https?:\/\/([^/:]+):\d+/i);
-  const host = hostMatch?.[1] ?? '';
-  if (host) {
-    if (Platform.OS === 'android' && (host === 'localhost' || host === '127.0.0.1')) {
-      return 'http://10.0.2.2:8000/api';
-    }
-    return `http://${host}:8000/api`;
-  }
+  const urlMatch = trimmed.match(/^(?:https?|exp):\/\/([^/:?]+)(?::\d+)?/i);
+  if (urlMatch?.[1]) return urlMatch[1];
 
-  // iOS simulator / local fallback.
-  return 'http://localhost:8000/api';
+  const hostPortMatch = trimmed.match(/^([^/:?]+)(?::\d+)?$/);
+  if (hostPortMatch?.[1]) return hostPortMatch[1];
+
+  return '';
 }
 
-const API_BASE = resolveApiBase();
+/** Executa a funcao getCandidateApiBases. */
+function getCandidateApiBases(): string[] {
+  const candidates: string[] = [];
+  const add = (base: string) => {
+    const normalized = String(base || '').trim().replace(/\/+$/, '');
+    if (!normalized) return;
+    if (!candidates.includes(normalized)) candidates.push(normalized);
+  };
+
+  const envBase = process.env.EXPO_PUBLIC_API_BASE?.trim();
+  if (envBase) add(envBase);
+
+  // Fonte 1: URL do bundle.
+  const scriptURL = String(NativeModules?.SourceCode?.scriptURL ?? '');
+  const hostFromScript = extractHost(scriptURL);
+
+  // Fonte 2: host do dev server no Android.
+  const serverHost = String((NativeModules as any)?.PlatformConstants?.ServerHost ?? '');
+  const hostFromServerHost = extractHost(serverHost);
+
+  // Fonte 3: Expo Constants (Expo Go / Dev Client).
+  const hostUri =
+    String((Constants as any)?.expoConfig?.hostUri ?? '') ||
+    String((Constants as any)?.manifest2?.extra?.expoClient?.hostUri ?? '') ||
+    String((Constants as any)?.manifest?.debuggerHost ?? '');
+  const hostFromConstants = extractHost(hostUri);
+
+  const hosts = [hostFromScript, hostFromServerHost, hostFromConstants].filter(Boolean);
+  for (const host of hosts) {
+    if (Platform.OS === 'android' && (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0')) {
+      add('http://10.0.2.2:8000/api');
+      continue;
+    }
+    add(`http://${host}:8000/api`);
+  }
+
+  // Fallbacks finais.
+  if (Platform.OS === 'android') add('http://10.0.2.2:8000/api');
+  add('http://localhost:8000/api');
+  add('http://127.0.0.1:8000/api');
+
+  return candidates;
+}
+
+const API_BASE_CANDIDATES = getCandidateApiBases();
+let activeApiBase = API_BASE_CANDIDATES[0];
+
+/** Executa a funcao apiFetch. */
+async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  const errors: string[] = [];
+  const bases = [activeApiBase, ...API_BASE_CANDIDATES.filter((b) => b !== activeApiBase)];
+
+  for (const base of bases) {
+    try {
+      const response = await fetch(`${base}${path}`, init);
+      activeApiBase = base;
+      return response;
+    } catch (err: any) {
+      errors.push(`${base} -> ${err?.message || 'network error'}`);
+    }
+  }
+
+  throw new Error(`Network request failed. Bases testadas: ${errors.join(' | ')}`);
+}
 
 const EXT_TO_MIME: Record<string, string> = {
   '.png': 'image/png',
@@ -83,7 +145,6 @@ function ensureFilename(filename: string, mimeType: string): string {
   return `${cleanName || 'diagram'}${ext}`;
 }
 
-import type { AnalysisListItem, AnalysisResponse } from '../../../src/types/analysis';
 export type {
   AnalysisListItem,
   AnalysisResponse,
@@ -117,7 +178,7 @@ export async function uploadAndAnalyze(
     type: normalizedMimeType,
   } as any);
 
-  const res = await fetch(`${API_BASE}/analysis`, {
+  const res = await apiFetch('/analysis', {
     method: 'POST',
     body: formData,
   });
@@ -132,27 +193,27 @@ export async function uploadAndAnalyze(
 
 /** Executa a funcao getAnalysis. */
 export async function getAnalysis(id: number): Promise<AnalysisResponse> {
-  const res = await fetch(`${API_BASE}/analysis/${id}`);
+  const res = await apiFetch(`/analysis/${id}`);
   if (!res.ok) throw new Error('Falha ao buscar an\u00e1lise');
   return res.json();
 }
 
 /** Executa a funcao listAnalyses. */
 export async function listAnalyses(): Promise<AnalysisListItem[]> {
-  const res = await fetch(`${API_BASE}/analysis`);
+  const res = await apiFetch('/analysis');
   if (!res.ok) throw new Error('Falha ao buscar an\u00e1lises');
   return res.json();
 }
 
 /** Executa a funcao deleteAnalysis. */
 export async function deleteAnalysis(id: number): Promise<void> {
-  const res = await fetch(`${API_BASE}/analysis/${id}`, { method: 'DELETE' });
+  const res = await apiFetch(`/analysis/${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error('Falha ao excluir an\u00e1lise');
 }
 
 /** Executa a funcao synthesizeSpeech. */
 export async function synthesizeSpeech(text: string): Promise<{ audioBase64: string; format: string }> {
-  const res = await fetch(`${API_BASE}/audio/speech`, {
+  const res = await apiFetch('/audio/speech', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text }),
@@ -163,10 +224,10 @@ export async function synthesizeSpeech(text: string): Promise<{ audioBase64: str
 
 /** Executa a funcao getPdfUrl. */
 export function getPdfUrl(id: number): string {
-  return `${API_BASE}/analysis/${id}/pdf`;
+  return `${activeApiBase}/analysis/${id}/pdf`;
 }
 
 /** Executa a funcao getImageUrl. */
 export function getImageUrl(id: number): string {
-  return `${API_BASE}/analysis/${id}/image`;
+  return `${activeApiBase}/analysis/${id}/image`;
 }

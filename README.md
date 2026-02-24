@@ -38,7 +38,7 @@ Clique nas miniaturas para abrir a imagem completa:
 - Web: React + TypeScript + Vite
 - Mobile: React Native + Expo
 - IA: OpenAI GPT-4o (vision + texto)
-- Dependencias Python: `backend/requirements.txt` (somente backend)
+- Dependencias Python: `requirements.txt` (na raiz, usado pelo backend)
 - Dependencias JS: `frontend/web/package.json` e `frontend/mobile/package.json`
 
 ## Estrutura
@@ -49,7 +49,7 @@ Clique nas miniaturas para abrir a imagem completa:
 - `teste/`: imagens de validação, script de teste e relatórios
 
 ## Preparar ambiente (Python + .env)
-O arquivo `requirements.txt` deste projeto e exclusivo do backend (`backend/requirements.txt`).
+O arquivo `requirements.txt` deste projeto fica na raiz e concentra as dependencias Python do backend.
 
 ```bash
 cd backend
@@ -65,7 +65,7 @@ source .venv/bin/activate
 # instalar dependências Python
 python -m pip install --upgrade pip
 # este requirements e apenas do backend
-pip install -r requirements.txt
+pip install -r ../requirements.txt
 
 # copiar arquivo de exemplo e ajustar OPENAI_API_KEY
 # Linux/macOS:
@@ -185,4 +185,5 @@ Fase 3 (qualidade e operação):
 ## Documentação
 - `AGENTS.md`: protocolo operacional de execução.
 - `docs/GUIA.md`: arquitetura, operação e checklist de validação.
+
 
