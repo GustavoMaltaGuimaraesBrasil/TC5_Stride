@@ -12,7 +12,6 @@ Ele organiza riscos em seis categorias:
 - `D` Denial of Service (negação de serviço)
 - `E` Elevation of Privilege (elevação de privilégio)
 
-
 ## Artefatos visuais (docs)
 Clique nas miniaturas para abrir a imagem completa:
 
