@@ -26,6 +26,8 @@ Ele organiza riscos em seis categorias:
 - Web: React + TypeScript + Vite
 - Mobile: React Native + Expo
 - IA: OpenAI GPT-4o (vision + texto)
+- Dependencias Python: `backend/requirements.txt` (somente backend)
+- Dependencias JS: `frontend/web/package.json` e `frontend/mobile/package.json`
 
 ## Estrutura
 - `backend/`: API, modelos, serviços e prompts
@@ -35,6 +37,8 @@ Ele organiza riscos em seis categorias:
 - `teste/`: imagens de validação, script de teste e relatórios
 
 ## Preparar ambiente (Python + .env)
+O arquivo `requirements.txt` deste projeto e exclusivo do backend (`backend/requirements.txt`).
+
 ```bash
 cd backend
 # criar ambiente virtual local
@@ -48,6 +52,7 @@ source .venv/bin/activate
 
 # instalar dependências Python
 python -m pip install --upgrade pip
+# este requirements e apenas do backend
 pip install -r requirements.txt
 
 # copiar arquivo de exemplo e ajustar OPENAI_API_KEY
@@ -168,3 +173,15 @@ Fase 3 (qualidade e operação):
 ## Documentação
 - `AGENTS.md`: protocolo operacional de execução.
 - `docs/GUIA.md`: arquitetura, operação e checklist de validação.
+
+## Artefatos visuais (docs)
+Clique nas miniaturas para abrir a imagem completa:
+
+| Infraestrutura | Workflow | Estrutura de diretorios |
+| --- | --- | --- |
+| [![Infraestrutura](docs/infra.png)](docs/infra.png) | [![Workflow](docs/wf.png)](docs/wf.png) | [![Diretorios](docs/dir.png)](docs/dir.png) |
+
+Outros artefatos:
+- `docs/Hackaton IADT.pdf`
+- `docs/APRESENTACAO_10MIN.md`
+- `docs/APRESENTACAO_10MIN_v2.md`

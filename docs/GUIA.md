@@ -91,9 +91,15 @@ Observacao de voz:
 - Nota de custo: para economizar chamadas TTS, desabilitar `PRELOAD_TTS_ON_RESULT` em `frontend/web/src/App.tsx` e `frontend/mobile/App.tsx`.
 
 ## Execucao local
+Observacao: `backend/requirements.txt` contem somente dependencias Python do backend.
+Web e mobile usam `package.json` proprios.
+
 ### Backend
 ```bash
 cd backend
+# instalar dependencias Python do backend
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 # criar backend/.env com OPENAI_API_KEY
 python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
