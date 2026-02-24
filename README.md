@@ -6,6 +6,7 @@ MVP para modelagem automatizada de ameacas STRIDE a partir de diagramas de arqui
 - Entrada: imagem de diagrama (`PNG`, `JPG`, `JPEG`, `GIF`, `WEBP`, `BMP`).
 - Estagio 1 (Vision): GPT-4o extrai `context_summary`, componentes, grupos e fluxos em JSON.
 - Estagio 2 (STRIDE): GPT-4o + RAG local + regras deterministicas gera ameacas e mitigacoes.
+- Voz (TTS): backend sintetiza o `context_summary` em pt-BR e web/mobile reproduzem automaticamente.
 - Saida: resposta JSON, persistencia em SQLite e relatorio PDF.
 - Idioma: resultados para o usuario final em portugues (pt-BR).
 - Evolucao em andamento: adocao gradual de LangChain para orquestracao, RAG e observabilidade.
@@ -38,6 +39,7 @@ Com os scripts (`run.bat` ou `runmac.sh`) voce pode:
 4. Executar teste automatico
 
 No app mobile, alem de selecionar imagem da galeria, o usuario tambem pode tirar foto para enviar o diagrama.
+O usuario nao grava audio: a voz e gerada automaticamente pelo sistema para ler o contexto da infraestrutura.
 
 ### Uso dos scripts
 Windows:
@@ -90,6 +92,8 @@ Opcoes do menu:
 - `GET /api/analysis/{id}`: detalhes do processamento salvo
 - `GET /api/analysis/{id}/image`: imagem original enviada
 - `GET /api/analysis/{id}/pdf`: download do relatorio
+- `POST /api/audio/speech`: sintetiza texto em audio (mp3 base64) para leitura do contexto
+- `POST /api/audio/transcribe`: endpoint backend de transcricao (nao exposto na UI do usuario final)
 - `GET /api/health`: health check
 
 ## Rastreabilidade STRIDE (RAG)
@@ -121,6 +125,7 @@ Fase 3 (qualidade e operacao):
   1. imagem submetida,
   2. `context_summary`,
   3. resumo e listagens STRIDE.
+- Ao concluir ou reabrir uma analise, web e mobile reproduzem automaticamente o audio do `context_summary`.
 - O PDF tambem inclui imagem submetida, contexto e listagens STRIDE.
 
 ## Documentacao

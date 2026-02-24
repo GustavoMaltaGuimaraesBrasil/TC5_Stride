@@ -57,17 +57,6 @@ export async function synthesizeSpeech(text: string): Promise<{ audioBase64: str
   return res.json();
 }
 
-export async function transcribeAudio(file: Blob, filename: string): Promise<{ text: string; model_used: string }> {
-  const formData = new FormData();
-  formData.append('file', file, filename);
-  const res = await fetch(`${API_BASE}/audio/transcribe`, {
-    method: 'POST',
-    body: formData,
-  });
-  if (!res.ok) throw new Error('Falha ao transcrever audio');
-  return res.json();
-}
-
 export function getPdfUrl(id: number): string {
   return `${API_BASE}/analysis/${id}/pdf`;
 }

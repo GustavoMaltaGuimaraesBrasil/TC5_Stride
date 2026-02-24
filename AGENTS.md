@@ -41,6 +41,7 @@ Ao implementar LangChain neste projeto:
 - Na UI e no PDF, mostrar antes das listagens:
   1. imagem submetida,
   2. contexto da infraestrutura (`context_summary`).
+- Voz na UI: somente leitura automatica do contexto; nao expor gravacao de audio para o usuario final.
 - Campos de rastreabilidade por ameaca:
   - `evidence`
   - `reference_ids`
