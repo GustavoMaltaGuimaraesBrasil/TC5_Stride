@@ -15,6 +15,7 @@ import SummaryCards from '../components/SummaryCards';
 import ThreatCard from '../components/ThreatCard';
 import type { AnalysisResponse } from '../services/api';
 import { getPdfUrl } from '../services/api';
+import { decodeEscapedUnicode } from '../utils/text';
 
 interface Props {
   result: AnalysisResponse;
@@ -37,6 +38,8 @@ export default function ResultsScreen({
   onSpeakBottom,
 }: Props) {
   const { diagram, stride } = result;
+  const contextSummary = diagram?.context_summary ? decodeEscapedUnicode(diagram.context_summary) : '';
+  const recommendations = stride?.recommendations.map((rec) => decodeEscapedUnicode(rec)) ?? [];
 
   if (!diagram || !stride) {
     return (
@@ -69,7 +72,7 @@ export default function ResultsScreen({
           </>
         ) : null}
 
-        {diagram.context_summary ? (
+        {contextSummary ? (
           <>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitleNoBorder}>Contexto da Infraestrutura</Text>
@@ -77,7 +80,7 @@ export default function ResultsScreen({
                 <Text style={styles.voiceIconText}>🔊</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.recommendation}>{diagram.context_summary}</Text>
+            <Text style={styles.recommendation}>{contextSummary}</Text>
           </>
         ) : null}
 
@@ -95,7 +98,7 @@ export default function ResultsScreen({
           <ThreatCard key={threat.id} threat={threat} />
         ))}
 
-        {stride.recommendations.length > 0 && (
+        {recommendations.length > 0 && (
           <>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitleNoBorder}>Recomendações</Text>
@@ -103,7 +106,7 @@ export default function ResultsScreen({
                 <Text style={styles.voiceIconText}>🔊</Text>
               </TouchableOpacity>
             </View>
-            {stride.recommendations.map((rec, i) => (
+            {recommendations.map((rec, i) => (
               <Text key={i} style={styles.recommendation}>
                 {i + 1}. {rec}
               </Text>

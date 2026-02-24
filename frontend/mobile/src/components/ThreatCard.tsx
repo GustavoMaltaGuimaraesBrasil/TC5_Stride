@@ -4,6 +4,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, severityColor } from '../theme/colors';
 import type { Threat } from '../services/api';
+import { decodeEscapedUnicode } from '../utils/text';
 
 interface Props {
   threat: Threat;
@@ -26,6 +27,11 @@ export default function ThreatCard({ threat }: Props) {
     'Denial of Service': 'Nega\u00e7\u00e3o de Servi\u00e7o',
     'Elevation of Privilege': 'Eleva\u00e7\u00e3o de Privil\u00e9gio',
   };
+  const description = decodeEscapedUnicode(threat.description);
+  const mitigation = decodeEscapedUnicode(threat.mitigation);
+  const evidence = threat.evidence.map((item) => decodeEscapedUnicode(item));
+  const referenceIds = threat.reference_ids.map((item) => decodeEscapedUnicode(item));
+  const targetName = decodeEscapedUnicode(threat.target_name);
 
   return (
     <View style={[styles.card, { borderLeftColor: borderColor }]}>
@@ -37,11 +43,11 @@ export default function ThreatCard({ threat }: Props) {
           <Text style={styles.strideText}>{strideLabel[threat.stride_category] ?? threat.stride_category}</Text>
         </View>
       </View>
-      <Text style={styles.target}>{threat.target_name}</Text>
-      <Text style={styles.description}>{threat.description}</Text>
+      <Text style={styles.target}>{targetName}</Text>
+      <Text style={styles.description}>{description}</Text>
       <Text style={styles.mitigation}>
         <Text style={styles.bold}>Mitiga\u00e7\u00e3o: </Text>
-        {threat.mitigation}
+        {mitigation}
       </Text>
       {threat.affected_flows.length > 0 && (
         <Text style={styles.flows}>
@@ -49,16 +55,16 @@ export default function ThreatCard({ threat }: Props) {
           {threat.affected_flows.join(', ')}
         </Text>
       )}
-      {threat.evidence.length > 0 && (
+      {evidence.length > 0 && (
         <Text style={styles.flows}>
           <Text style={styles.bold}>Evid\u00eancias: </Text>
-          {threat.evidence.join(' | ')}
+          {evidence.join(' | ')}
         </Text>
       )}
-      {threat.reference_ids.length > 0 && (
+      {referenceIds.length > 0 && (
         <Text style={styles.flows}>
           <Text style={styles.bold}>Refer\u00eancias: </Text>
-          {threat.reference_ids.join(', ')}
+          {referenceIds.join(', ')}
         </Text>
       )}
     </View>
