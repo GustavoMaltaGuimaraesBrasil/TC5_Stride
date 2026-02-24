@@ -17,13 +17,10 @@ Clique nas miniaturas para abrir a imagem completa:
 
 <p align="center">
    <a href="docs/dir.png">
-    <img src="docs/dir.png" alt="Estrutura de diretorios" width="32%" />
+    <img src="docs/dir.png" alt="Estrutura de diretorios" width="50%" />
   </a>
-   <a href="docs/infra.png">
-    <img src="docs/infra.png" alt="Infraestrutura" width="32%" />
-  </a>
-  <a href="docs/wf.png">
-    <img src="docs/wf.png" alt="Workflow" width="32%" />
+    <a href="docs/wf.png">
+    <img src="docs/wf.png" alt="Workflow" width="50%" />
   </a>
 </p>
 
