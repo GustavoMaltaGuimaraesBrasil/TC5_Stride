@@ -33,6 +33,9 @@ Clique nas miniaturas para abrir a imagem completa:
 - Idioma: resultados para o usuário final em português (pt-BR).
 - Evolução em andamento: adoção gradual de LangChain para orquestração, RAG e observabilidade.
 
+## Apresentação
+- Slides e roteiro: [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md)
+
 ## Stack
 - Backend: FastAPI + SQLAlchemy async + SQLite
 - Web: React + TypeScript + Vite
@@ -185,5 +188,4 @@ Fase 3 (qualidade e operação):
 ## Documentação
 - `AGENTS.md`: protocolo operacional de execução.
 - `docs/GUIA.md`: arquitetura, operação e checklist de validação.
-
 

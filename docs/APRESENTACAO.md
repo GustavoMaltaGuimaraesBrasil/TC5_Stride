@@ -1,7 +1,7 @@
 ## STRIDE Modelador de Ameaças com LLM, Visão, RAG, Web e Mobile
 
 ## 1. Objetivo da apresentação
-Mostrar, em 10 minutos, como o projeto resolve o problema central do desafio:
+Mostrar, como o projeto resolve o problema central do desafio:
 
 - Entender uma imagem de diagrama de arquitetura.
 - Aplicar STRIDE para levantar riscos.
@@ -247,6 +247,6 @@ Referência de arquitetura alvo: `docs/GUIA.md` (seção de migração para Lang
 
 ## 6. Encerramento
 
-- “Transformamos um artefato visual em decisões de segurança acionáveis.”
+- “Transformamei um artefato visual em decisões de segurança acionáveis.”
 - “A análise deixa de ser manual e passa a ser reproduzível, auditável e reaproveitável.”
 - “O projeto entrega valor agora e já está arquitetado para evolução com LangChain.”
