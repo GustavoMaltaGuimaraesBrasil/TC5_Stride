@@ -46,7 +46,7 @@ export default function ThreatCard({ threat }: Props) {
       <Text style={styles.target}>{targetName}</Text>
       <Text style={styles.description}>{description}</Text>
       <Text style={styles.mitigation}>
-        <Text style={styles.bold}>Mitiga\u00e7\u00e3o: </Text>
+        <Text style={styles.bold}>{'Mitiga\u00e7\u00e3o: '}</Text>
         {mitigation}
       </Text>
       {threat.affected_flows.length > 0 && (
@@ -57,13 +57,13 @@ export default function ThreatCard({ threat }: Props) {
       )}
       {evidence.length > 0 && (
         <Text style={styles.flows}>
-          <Text style={styles.bold}>Evid\u00eancias: </Text>
+          <Text style={styles.bold}>{'Evid\u00eancias: '}</Text>
           {evidence.join(' | ')}
         </Text>
       )}
       {referenceIds.length > 0 && (
         <Text style={styles.flows}>
-          <Text style={styles.bold}>Refer\u00eancias: </Text>
+          <Text style={styles.bold}>{'Refer\u00eancias: '}</Text>
           {referenceIds.join(', ')}
         </Text>
       )}
