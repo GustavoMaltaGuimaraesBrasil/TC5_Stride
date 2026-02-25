@@ -1,4 +1,3 @@
-# Apresentação (10 min) - FIAP Software Security
 ## STRIDE Modelador de Ameaças com LLM, Visão, RAG, Web e Mobile
 
 ## 1. Objetivo da apresentação
@@ -10,68 +9,70 @@ Mostrar, em 10 minutos, como o projeto resolve o problema central do desafio:
 
 Com diferenciais reais de engenharia:
 
-- Backend em camadas.
+- Desnvolvimento em camadas.
 - Persistência em banco.
 - Web + Mobile com câmera.
+- LangChain.
+- RAG.
 - PDF executivo.
 - Voz em pt-BR para leitura do resultado.
 
 ---
 
-## 2. Roteiro de 10 minutos (slide a slide)
+## 2. Roteiro
 
-### Slide 1 (0:00-1:00) - Problema e proposta
+### Problema e proposta
 - Problema: análise de ameaças manual é lenta e depende de especialista.
 - Proposta: automatizar a leitura do diagrama + geração STRIDE com explicabilidade.
 - Resultado: acelera triagem de risco com consistência técnica.
 
-### Slide 2 (1:00-2:00) - Escopo do projeto
+### Escopo do projeto
 - Entrada: imagem (`PNG`, `JPG`, `JPEG`, `GIF`, `WEBP`, `BMP`).
 - Saída: contexto da infraestrutura + ameaças + mitigação + recomendações.
 - Entregáveis adicionais: histórico persistido, PDF e leitura por voz.
 
-### Slide 2.1 (extra de 20s) - Stack de IA usada
+### Stack de IA usada
 - Chat/Vision: `gpt-4o` (extração de arquitetura e geração STRIDE).
 - TTS: `tts-1-hd`, voz `shimmer`, saída `mp3`.
 - Transcrição (endpoint backend): `gpt-4o-mini-transcribe` com fallback para `whisper-1`.
-- RAG local: base `stride_rag.md` para evidências e referências.
+- RAG local: base `backend/app/knowledge/stride_rag.md` para evidências e referências.
 
-### Slide 3 (2:00-3:00) - Arquitetura em camadas
+### Arquitetura em camadas
 - `frontend/web`: experiência desktop para operação e apresentação.
 - `frontend/mobile`: captura por galeria/câmera + consumo dos mesmos endpoints.
 - `backend`: FastAPI, pipeline de análise, persistência e geração de PDF/voz.
 - `sqlite`: guarda processamento e permite reabrir/excluir.
 
-### Slide 4 (3:00-5:00) - Pipeline técnico (núcleo do desafio)
+### Pipeline técnico (núcleo do desafio)
 - Etapa 1 (Vision): LLM extrai componentes, grupos, fluxos e contexto.
 - Etapa 2 (STRIDE): LLM gera ameaças e mitigação.
 - RAG local: injeta contexto técnico e IDs de referência.
 - Pós-processamento determinístico: reforça cobertura e resumo por severidade.
 
-### Slide 5 (5:00-6:30) - Produto aplicado (web e mobile)
+### Produto aplicado (web e mobile)
 - Upload de imagem e abertura de processamentos salvos.
 - Mobile com captura por câmera.
 - Exibição completa: imagem, contexto, ameaças, recomendações.
 - Exclusão de processamento e atualização de histórico.
 
-### Slide 6 (6:30-7:30) - Voz e PDF (valor para negócio)
+### Voz e PDF (valor para negócio)
 - Voz por seção: contexto, ameaças/mitigações e recomendações.
 - Pré-carregamento de áudio para resposta instantânea no clique.
 - PDF com imagem enviada + resumo + listagem detalhada das ameaças.
 
-### Slide 7 (7:30-8:30) - Qualidade e rastreabilidade
+### Qualidade e rastreabilidade
 - Contratos tipados no backend e compartilhados no frontend.
 - Evidências e referências por ameaça (`evidence`, `reference_ids`).
 - Teste automatizado em lote com score e relatório JSON.
 
-### Slide 8 (8:30-10:00) - Fechamento
+### Fechamento
 - O objetivo do desafio foi cumprido com produto utilizável.
 - O sistema já está pronto para evolução de orquestração.
 - Próximo passo de arquitetura: migração controlada para LangChain mantendo contrato da API.
 
 ---
 
-## 3. Arquitetura resumida para explicar em 30 segundos
+## 3. Arquitetura resumida
 
 ```text
 Web/Mobile -> POST /api/analysis
@@ -89,7 +90,7 @@ Web/Mobile -> POST /api/analysis
 
 ---
 
-## 4. Trechos de código para mostrar (slides técnicos)
+## 4. Trechos de código
 
 ### 4.1 Pipeline principal da análise
 Arquivo: `backend/app/routers/analysis.py`
@@ -107,7 +108,7 @@ async def create_analysis(file: UploadFile = File(...), session: AsyncSession = 
     ...
 ```
 
-Ponto de fala: o endpoint já executa o pipeline fim a fim e persiste o resultado completo.
+O endpoint já executa o pipeline fim a fim e persiste o resultado completo.
 
 ### 4.2 Visão computacional com saída JSON estruturada
 Arquivo: `backend/app/services/vision.py`
@@ -125,7 +126,7 @@ data = json.loads(response.choices[0].message.content)
 result = DiagramAnalysis.model_validate(data)
 ```
 
-Ponto de fala: reduz ambiguidade da LLM com `json_object` e validação tipada.
+Reduz ambiguidade da LLM com `json_object` e validação tipada.
 
 ### 4.3 STRIDE com RAG e enriquecimento determinístico
 Arquivo: `backend/app/services/stride.py`
@@ -144,7 +145,7 @@ report = STRIDEReport.model_validate(json.loads(response.choices[0].message.cont
 _ensure_baseline_coverage(diagram, report)
 ```
 
-Ponto de fala: une geração da LLM com regras objetivas para cobertura mínima STRIDE.
+Une geração da LLM com regras objetivas para cobertura STRIDE.
 
 ### 4.4 Persistência de processamento
 Arquivo: `backend/app/models/database.py`
@@ -160,7 +161,7 @@ class Analysis(Base):
     stride_json = Column(JSON, nullable=True)
 ```
 
-Ponto de fala: cada execução vira um ativo consultável, não uma resposta descartável.
+Cada execução vira um ativo consultável, não uma resposta descartável.
 
 ### 4.5 Geração de PDF com imagem enviada
 Arquivo: `backend/app/services/report.py`
@@ -174,7 +175,7 @@ if diagram.context_summary:
     elements.append(Paragraph(diagram.context_summary, styles["Normal"]))
 ```
 
-Ponto de fala: relatório pronto para gestão, auditoria e evidência.
+Relatório pronto para gestão, auditoria e evidência.
 
 ### 4.6 Voz no backend (TTS)
 Arquivo: `backend/app/services/voice.py`
@@ -190,7 +191,7 @@ payload = {
 response = await client.post("/audio/speech", headers=_auth_headers(), json=payload)
 ```
 
-Ponto de fala: o frontend nunca chama OpenAI direto; segurança e governança ficam no backend.
+O frontend nunca chama OpenAI direto; segurança e governança ficam no backend.
 
 ### 4.7 Pré-carregamento de áudio para UX imediata
 Arquivo: `frontend/web/src/App.tsx`
@@ -213,7 +214,7 @@ async function prepareSpeechCache(analysis: AnalysisResponse) {
 }
 ```
 
-Ponto de fala: escolha consciente de qualidade de experiência acima de economia de chamada.
+Escolha consciente de qualidade de experiência acima de economia de chamada.
 
 ### 4.8 Mobile com câmera integrada
 Arquivo: `frontend/mobile/src/screens/UploadScreen.tsx`
@@ -228,11 +229,11 @@ const result = await ImagePicker.launchCameraAsync({
 });
 ```
 
-Ponto de fala: além de analisar arquivo, o usuário captura cenário real em campo.
+Além de analisar arquivo, o usuário captura cenário real em campo.
 
 ---
 
-## 5. RAG e LangChain: como posicionar na apresentação
+## 5. RAG e LangChain
 
 Mensagem recomendada:
 
@@ -244,42 +245,8 @@ Referência de arquitetura alvo: `docs/GUIA.md` (seção de migração para Lang
 
 ---
 
-## 6. Script de demo (2 minutos, opcional)
-
-1. Abrir Web.
-2. Enviar um diagrama.
-3. Mostrar contexto extraído.
-4. Mostrar lista STRIDE com mitigação.
-5. Clicar em um botão de áudio.
-6. Baixar PDF.
-7. Voltar para histórico e reabrir análise salva.
-
-Mensagem final da demo:
-“Não é apenas inferência pontual; é um fluxo completo de análise, rastreabilidade e operação.”
-
----
-
-## 7. Frases de impacto para encerramento
+## 6. Encerramento
 
 - “Transformamos um artefato visual em decisões de segurança acionáveis.”
 - “A análise deixa de ser manual e passa a ser reproduzível, auditável e reaproveitável.”
 - “O projeto entrega valor agora e já está arquitetado para evolução com LangChain.”
-
----
-
-## 8. Q&A (respostas curtas prontas)
-
-### Como vocês evitam resposta solta da LLM?
-- `response_format=json_object`, validação Pydantic e contratos estáveis.
-
-### Como justificam cada ameaça?
-- Campos `evidence` + `reference_ids` por item no STRIDE.
-
-### Onde fica salvo o resultado?
-- SQLite (`analyses`), com endpoints para listar, abrir, excluir e gerar PDF.
-
-### Funciona no celular?
-- Sim. Mobile com galeria, câmera, histórico e leitura por voz via backend.
-
-### LangChain já está em produção?
-- O runtime atual usa services modulares; LangChain está modelado para migração controlada sem quebrar API.
