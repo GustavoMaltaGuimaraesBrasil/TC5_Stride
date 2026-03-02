@@ -2,6 +2,10 @@
 
 MVP para modelagem automatizada de ameaças STRIDE a partir de diagramas de arquitetura.
 
+## Video
+[Assistir no YouTube](https://youtu.be/Bxl8khHVpVY)
+
+
 ## O que é STRIDE
 STRIDE é um modelo de ameaças da Microsoft usado para identificar riscos de segurança em arquiteturas de software.
 Ele organiza riscos em seis categorias:
@@ -188,4 +192,3 @@ Fase 3 (qualidade e operação):
 ## Documentação
 - `AGENTS.md`: protocolo operacional de execução.
 - `docs/GUIA.md`: arquitetura, operação e checklist de validação.
-
